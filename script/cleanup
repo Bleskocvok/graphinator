@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+NAME=graphinator
+LIB=panel-plugin/.libs/$NAME.so
+
+rm /usr/lib/xfce4/panel-plugins/$NAME.so
+rm /usr/share/xfce4/panel/plugins/$NAME.desktop

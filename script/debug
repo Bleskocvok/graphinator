@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# run as script/debug
+
+NAME=graphinator
+LIB=panel-plugin/.libs/lib$NAME.so
+
+ln -s \
+    $(realpath "$LIB") \
+    /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins/lib$NAME.so
+
+cp \
+    panel-plugin/$NAME.desktop \
+    /usr/share/xfce4/panel/plugins/$NAME.desktop
+
+ls /usr/lib/x86_64-linux-gnu/xfce4/panel/plugins | grep "$NAME"
+ls /usr/share/xfce4/panel/plugins                | grep "$NAME"
