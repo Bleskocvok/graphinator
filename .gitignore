@@ -1,0 +1,48 @@
+
+# targets
+/panel-plugin/.libs/
+
+# header dependencies, I guess
+/panel-plugin/.deps/
+
+# helper files for linking the library
+/panel-plugin/libgraphinator_la-*
+/panel-plugin/libgraphinator.la
+
+# autotools generated makefiles/configs
+Makefile
+Makefile.in
+/configure.ac
+
+# fucking config garbage
+/config.*
+
+# some random fucking tools
+/aclocal.m4
+/libtool
+/missing
+/stamp-h1
+/compile
+/install-sh
+/ltmain.sh
+/depcomp
+/configure
+# why is this even there?
+/configure~
+
+# fucking cache folders
+/m4/
+/autom4te.cache/
+
+# my garbage
+z.old.*
+
+# apparently autotools also generate package archives
+/*.tar.*
+
+# vscode settings
+/.vscode/
+
+# so much garbage...
+
+# ENDLESS TRASH!
