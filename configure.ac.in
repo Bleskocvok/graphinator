@@ -1,0 +1,47 @@
+
+m4_define([graphinator_version_major], [0])
+m4_define([graphinator_version_minor], [0])
+m4_define([graphinator_version_micro], [1])
+m4_define([graphinator_version],
+    [graphinator_version_major().graphinator_version_minor().graphinator_version_micro()])
+
+dnl Init autoconf
+AC_CONFIG_MACRO_DIR([m4])
+AC_COPYRIGHT([Copyright (c) 2022
+        František Bráblík <frantisek.brablik@gmail.com>])
+AC_INIT([graphinator],
+        [graphinator_version()],
+        [https://github.com/Bleskocvok],
+        [graphinator])
+AC_PREREQ([2.50])
+AC_REVISION([xfce4_panel_version_build])
+
+dnl Init automake
+AM_INIT_AUTOMAKE([1.15 no-dist-gzip dist-bzip2 tar-ustar foreign])
+AC_CONFIG_HEADERS([config.h])
+AM_MAINTAINER_MODE()
+
+
+dnl Init libtool
+LT_PREREQ([2.2.6])
+LT_INIT([disable-static])
+
+dnl Check for required programs and stuff
+AC_PROG_CC()
+AC_PROG_CC_C_O()
+AC_PROG_LD()
+AC_PROG_INSTALL()
+
+dnl Check for X11
+XDT_CHECK_LIBX11_REQUIRE()
+
+dnl Required packages
+XDT_CHECK_PACKAGE([LIBXFCE4UI], [libxfce4ui-2], [4.14.0])
+XDT_CHECK_PACKAGE([LIBXFCE4PANEL], [libxfce4panel-2.0], [4.14.0])
+
+dnl Output files
+AC_CONFIG_FILES([
+    Makefile
+    panel-plugin/Makefile
+])
+AC_OUTPUT
