@@ -1,3 +1,4 @@
 
+test_data
 cpu_usg
-cpu_usg.o
+*.o

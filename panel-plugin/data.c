@@ -19,6 +19,12 @@ size_t data_count( data_t* data )
 }
 
 
+size_t data_capacity( data_t* data )
+{
+    return data->capacity;
+}
+
+
 double data_at( data_t* data, size_t i )
 {
     return data->vals[ (i + data->end) % data->capacity ];
@@ -40,7 +46,7 @@ void data_push( data_t* data, double val )
 }
 
 
-static void data_free( data_t* data )
+void data_free( data_t* data )
 {
     free( data->vals );
     *data = (data_t){ 0 };
