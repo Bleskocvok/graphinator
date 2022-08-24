@@ -8,6 +8,9 @@ G_BEGIN_DECLS
 
 
 #include "cpu_info.h"
+#include "data.h"
+
+#include <stdbool.h>        // bool, true, false
 
 
 typedef struct
@@ -25,14 +28,42 @@ typedef struct
 } panel_t;
 
 
+typedef double ( *collect_func_t ) ( void* );
+
+
 typedef struct
 {
-    double* vals;
-    size_t capacity;
-    size_t count;
-    size_t end;
+    int interval;
 
-} data_t;
+    int history_size;
+
+    double max_value;
+
+    collect_func_t collect;
+
+} section_settings_t;
+
+
+typedef struct
+{
+    data_t measurements;
+
+    double last_value;
+
+    double max_value;
+
+    collect_func_t collect;
+
+    void* ptr;
+
+    GtkWidget* widget;
+
+} section_t;
+
+
+typedef struct
+{
+} led_graph_t;
 
 
 G_END_DECLS
