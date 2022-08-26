@@ -46,7 +46,21 @@ typedef struct
 
 typedef struct
 {
-    data_t measurements;
+    int blk_w,
+        blk_h;
+
+    int pad_x,
+        pad_y;
+
+    int w,
+        h;
+
+} graph_t;
+
+
+typedef struct
+{
+    data_t data;
 
     double last_value;
 
@@ -58,12 +72,9 @@ typedef struct
 
     GtkWidget* widget;
 
+    graph_t graph;
+
 } section_t;
-
-
-typedef struct
-{
-} led_graph_t;
 
 
 G_END_DECLS

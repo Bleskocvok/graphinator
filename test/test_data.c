@@ -15,7 +15,10 @@ int main()
         data_push( &data, n );
         for ( size_t i = 0; i < data_count( &data ); ++i )
             printf( "%3d ", (int) data_at( &data, i ) );
+        printf( "%3zd / %3zd", data_count( &data ), data_capacity( &data ) );
         printf( "\n" );
     }
+
+    data_free( &data );
     return 0;
 }
