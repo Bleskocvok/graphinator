@@ -17,26 +17,15 @@
 #include <stdio.h>          // snprintf
 
 
-#define M_MIN( x, y )  ( ( ( x ) > ( y ) ) ? ( y ) : ( x ) )
-#define M_MAX( x, y )  ( ( ( x ) > ( y ) ) ? ( x ) : ( y ) )
+#define  M_MIN( x, y )  ( ( ( x ) > ( y ) ) ? ( y ) : ( x ) )
+#define  M_MAX( x, y )  ( ( ( x ) > ( y ) ) ? ( x ) : ( y ) )
 
 
 //
 // The plugin entry point
 //
-
 static void plugin_construct( XfcePanelPlugin* plugin );
-
 XFCE_PANEL_PLUGIN_REGISTER( plugin_construct );
-
-
-void section_init( section_t* section, section_settings_t* settings )
-{
-    *section = (section_t){ 0 };
-    data_init( &section->data, settings->history_size );
-    section->collect = settings->collect;
-    section->max_value = settings->max_value;
-}
 
 
 static void panel_free( XfcePanelPlugin* plugin, gpointer ptr )
@@ -47,26 +36,45 @@ static void panel_free( XfcePanelPlugin* plugin, gpointer ptr )
     gtk_widget_destroy( pan->ebox );
 
     g_slice_free( panel_t, pan );
+
+    // TODO: DO PROPER CLEANUP OF EVERYTHING!!!
 }
 
 
 static gboolean collector( gpointer ptr )
 {
-    section_t* section = ptr;
+    panel_entry_t* ent = ptr;
 
-    double val = section->collect( section->ptr );
+    double val = ent->section->collector.collect( ent->section->collector.ptr );
 
-    section->last_value = val;
+    ent->section->last_value = val;
     
-    data_push( &section->data, val );
+    data_push( &ent->section->data, val );
 
-    gtk_widget_queue_draw_area( section->widget, 0, 0, section->graph.w,
-                                                       section->graph.h );
+    gtk_widget_queue_draw_area( ent->draw_area, 0, 0, ent->section->graph.w,
+                                                      ent->section->graph.h );
 
     return G_SOURCE_CONTINUE;
 }
 
-#include <math.h>
+
+static void* init_cpu_data( void )
+{
+    proc_stat_t* ptr = calloc( 1, sizeof( proc_stat_t ) );
+    if ( !ptr )
+        return NULL;
+
+    proc_stat_read( ptr, 1 );
+    return ptr;
+}
+
+
+static void free_cpu_data( void* ptr )
+{
+    free( ptr );
+}
+
+
 static double collect_cpu_data( void* ptr )
 {
     proc_stat_t* prev_stat = ptr;
@@ -78,15 +86,10 @@ static double collect_cpu_data( void* ptr )
     unsigned long long total =  ( proc_stat_total( &stat )
                                 - proc_stat_total( prev_stat ) );
 
-    double frac = total == 0 ? 0
+    double frac = total == 0 ? 0  // avoid division by zero
                              : ( (double) ( proc_stat_work( &stat )
                                           - proc_stat_work( prev_stat ) )
                                / (double) total );
-
-    // char buf[ 256 ] = { 0 };
-    // snprintf( buf, sizeof( buf ), "cpu %d %%", (int)( frac * 100 ) );
-
-    // gtk_label_set_text( GTK_LABEL( pan->label ), buf );
 
     *prev_stat = stat;
 
@@ -100,9 +103,6 @@ static void draw( GtkWidget* widget, cairo_t* cr, gpointer ptr )
 
     const graph_t g = sec->graph;
 
-    gtk_render_background( gtk_widget_get_style_context( widget ),
-                           cr, 0, 0, g.w, g.h);
-
     int rows = g.h / ( g.blk_h + g.pad_y );
     int cols = g.w / ( g.blk_w + g.pad_x );
 
@@ -113,30 +113,54 @@ static void draw( GtkWidget* widget, cairo_t* cr, gpointer ptr )
 
     double blk = sec->max_value / (double)rows;
 
+    gtk_render_background( gtk_widget_get_style_context( widget ),
+                           cr, 0, 0, g.w, g.h);
+
     for ( int y = 0; y < rows; ++y )
     {
         for ( int x = 0; x < cols; ++x )
         {
             int i = x + count - cols;
-            if ( i >= 0
-                && ( rows - 1 - y ) * blk <= data_at( &sec->data, i ) )
-                cairo_set_source_rgb( cr, 1, 0.5, 0.5 );
+            if ( i >= 0 && ( rows - 1 - y ) * blk <= data_at( &sec->data, i ) )
+                cairo_set_source_rgb( cr, g.rgb_on[ 0 ], g.rgb_on[ 1 ],
+                                          g.rgb_on[ 2 ] );
             else
-                cairo_set_source_rgb( cr, 0.4, 0.4, 0.4 );
+                cairo_set_source_rgb( cr, g.rgb_off[ 0 ], g.rgb_off[ 1 ],
+                                          g.rgb_off[ 2 ] );
 
-            cairo_rectangle( cr,
-                             ( g.blk_w + g.pad_x ) * x,
-                             ( g.blk_h + g.pad_y ) * y,
-                             g.blk_w,
-                             g.blk_h );
+            cairo_rectangle( cr, ( g.blk_w + g.pad_x ) * x,
+                                 ( g.blk_h + g.pad_y ) * y,
+                                 g.blk_w,
+                                 g.blk_h );
             cairo_fill( cr );
         }
     }
 }
 
 
-static section_t section = { 0 };
-static proc_stat_t prev_stat = { 0 };
+static section_t section =
+{
+    .collector = (collector_t){ .collect = collect_cpu_data,
+                                .init = init_cpu_data,
+                                .free = free_cpu_data,       },
+
+    .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
+                        .pad_x =  1, .pad_y =  1,
+                        .h     = 24, .w     =  0,
+                        .rgb_on  = MK_RGB( 255, 128, 128 ),
+                        .rgb_off = MK_RGB( 102, 102, 102 ),  },
+
+    .interval = 750,
+    .max_value = 100,
+    .use_max_value = true,
+    .show_label = true,
+};
+
+
+static panel_entry_t cpu_entry = (panel_entry_t)
+{
+    .section = &section,
+};
 
 
 static void plugin_construct( XfcePanelPlugin* plugin )
@@ -153,46 +177,36 @@ static void plugin_construct( XfcePanelPlugin* plugin )
     gtk_widget_show( pan->wrap );
     gtk_container_add( GTK_CONTAINER( pan->ebox ), pan->wrap );
 
-    pan->label = gtk_label_new( "" );
-    gtk_widget_show( pan->label );
-    gtk_widget_set_size_request( GTK_WIDGET( pan->label ), 100, 24 );
-    gtk_box_pack_start( GTK_BOX( pan->wrap ), pan->label, FALSE, FALSE, 0 );
+    // pan->label = gtk_label_new( "" );
+    // gtk_widget_show( pan->label );
+    // gtk_widget_set_size_request( GTK_WIDGET( pan->label ), 100, 24 );
+    // gtk_box_pack_start( GTK_BOX( pan->wrap ), pan->label, FALSE, FALSE, 0 );
 
     g_signal_connect( G_OBJECT( plugin ), "free-data",
                       G_CALLBACK( panel_free ), pan );
 
-    section_settings_t settings =
+    // TODO
+    const int history_size = 10;
+    data_init( &section.data, history_size );
+
+    section.graph.w = history_size * ( section.graph.blk_w
+                                     + section.graph.pad_x );
+
+    section.collector.ptr = section.collector.init();
+    if ( !section.collector.ptr )
     {
-        .interval = 300,
-        .history_size = 20,
-        .max_value = 100,
-        .collect = collect_cpu_data,
-    };
+        // TODO: error
+    }
 
-    section_init( &section, &settings );
-    section.ptr = &prev_stat;
+    g_timeout_add( section.interval, G_SOURCE_FUNC( collector ), &cpu_entry );
 
-    section.graph = (graph_t)
-    {
-        .blk_w =  2, .blk_h =  1,
-        .pad_x =  1, .pad_y =  1,
-        .h     = 24,
-    };
-    section.graph.w = settings.history_size * ( section.graph.blk_w
-                                              + section.graph.pad_x );
-
-    proc_stat_read( &prev_stat, 1 );
-
-    g_timeout_add( settings.interval, G_SOURCE_FUNC( collector ), &section );
-
-    pan->draw_area = gtk_drawing_area_new();
-    gtk_widget_set_size_request( pan->draw_area, section.graph.w,
-                                                 section.graph.h );
-    gtk_widget_show( pan->draw_area );
-    gtk_widget_set_valign( pan->draw_area, GTK_ALIGN_CENTER );
-    gtk_box_pack_start( GTK_BOX( pan->wrap ), pan->draw_area, FALSE, FALSE, 0 );
-    g_signal_connect( G_OBJECT( pan->draw_area ), "draw",
+    cpu_entry.draw_area = gtk_drawing_area_new();
+    gtk_widget_set_size_request( cpu_entry.draw_area, section.graph.w,
+                                                      section.graph.h );
+    gtk_widget_show( cpu_entry.draw_area );
+    gtk_widget_set_valign( cpu_entry.draw_area, GTK_ALIGN_CENTER );
+    gtk_box_pack_start( GTK_BOX( pan->wrap ), cpu_entry.draw_area,
+                                              FALSE, FALSE, 0 );
+    g_signal_connect( G_OBJECT( cpu_entry.draw_area ), "draw",
                       G_CALLBACK( draw ), &section );
-
-    section.widget = pan->draw_area;
 }

@@ -19,30 +19,11 @@ typedef struct
 
     GtkWidget* ebox;
     GtkWidget* wrap;
-    GtkWidget* label;
-    GtkWidget* draw_area;
-
-    // cpu info
-    proc_stat_t prev_stat;
 
 } panel_t;
 
 
-typedef double ( *collect_func_t ) ( void* );
-
-
-typedef struct
-{
-    int interval;
-
-    int history_size;
-
-    double max_value;
-
-    collect_func_t collect;
-
-} section_settings_t;
-
+#define MK_RGB( r, g, b ) { r / 255.0, g / 255.0, b / 255.0 }
 
 typedef struct
 {
@@ -55,26 +36,55 @@ typedef struct
     int w,
         h;
 
+    double rgb_off[ 3 ];
+    double rgb_on[ 3 ];
+
 } graph_t;
+
+
+typedef double ( *collect_func_t ) ( void* );
+typedef void*  ( *init_func_t )    ( void  );
+typedef void   ( *free_func_t )    ( void* );
+
+typedef struct
+{
+    init_func_t init;
+    collect_func_t collect;
+    free_func_t free;
+
+    void* ptr;
+
+} collector_t;
 
 
 typedef struct
 {
-    data_t data;
+    collector_t collector;
 
-    double last_value;
+    int interval;
 
     double max_value;
+    const char* label_fmt;
 
-    collect_func_t collect;
-
-    void* ptr;
-
-    GtkWidget* widget;
+    bool use_max_value : 1;
+    bool show_label    : 1;
 
     graph_t graph;
 
+    data_t data;
+    double last_value;
+
 } section_t;
+
+
+typedef struct
+{
+    section_t* section;
+
+    GtkWidget* draw_area;
+    GtkWidget* label;
+
+} panel_entry_t;
 
 
 G_END_DECLS
