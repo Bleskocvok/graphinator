@@ -56,12 +56,6 @@ static section_t section =
 };
 
 
-static panel_entry_t cpu_entry = (panel_entry_t)
-{
-    .section = &section,
-};
-
-
 static void panel_free( XfcePanelPlugin* plugin, gpointer ptr )
 {
     panel_t* pan = ptr;
@@ -69,9 +63,16 @@ static void panel_free( XfcePanelPlugin* plugin, gpointer ptr )
     // destroy the encapsulating widget and all children
     gtk_widget_destroy( pan->ebox );
 
-    g_slice_free( panel_t, pan );
+    for ( size_t i = 0; i < pan->entries.count; ++i )
+    {
+        data_free( &pan->entries.ptr[ i ].section->data );
+        collector_t* coll = &pan->entries.ptr[ i ].section->collector;
+        coll->free( coll->ptr );
+    }
 
-    // TODO: DO PROPER CLEANUP OF EVERYTHING!!!
+    entries_free( &pan->entries );
+
+    g_slice_free( panel_t, pan );
 }
 
 
@@ -174,9 +175,49 @@ static void draw( GtkWidget* widget, cairo_t* cr, gpointer ptr )
 }
 
 
+static void entries_init( entries_t* entries, size_t reserved )
+{
+    *entries = (entries_t){ 0 };
+    entries->ptr = calloc( reserved, sizeof( panel_entry_t ) );
+    entries->alloc = reserved;
+}
+
+
+static void entries_free( entries_t* entries )
+{
+    free( entries->ptr );
+    *entries = (entries_t){ 0 };
+}
+
+
+static void entries_add( entries_t* entries, panel_t* pan, section_t* sec )
+{
+    // add to collection
+
+    entries->ptr[ entries->count ] = (panel_entry_t){ .section = sec };
+    panel_entry_t* entry = &entries->ptr[ entries->count ];
+    ++entries->count;
+
+    // ui bindings and callbacks
+
+    g_timeout_add( sec->interval, G_SOURCE_FUNC( collector ), entry );
+
+    entry->draw_area = gtk_drawing_area_new();
+    gtk_widget_set_size_request( entry->draw_area, section.graph.w,
+                                                   section.graph.h );
+    gtk_widget_show( entry->draw_area );
+    gtk_widget_set_valign( entry->draw_area, GTK_ALIGN_CENTER );
+    gtk_box_pack_start( GTK_BOX( pan->wrap ), entry->draw_area,
+                                              FALSE, FALSE, 0 );
+    g_signal_connect( G_OBJECT( entry->draw_area ), "draw",
+                      G_CALLBACK( draw ), &section );
+}
+
+
 static void plugin_construct( XfcePanelPlugin* plugin )
 {
     panel_t* pan = g_slice_new( panel_t );
+    *pan = (panel_t){ 0 };
 
     pan->plugin = plugin;
 
@@ -209,15 +250,6 @@ static void plugin_construct( XfcePanelPlugin* plugin )
         // TODO: error
     }
 
-    g_timeout_add( section.interval, G_SOURCE_FUNC( collector ), &cpu_entry );
-
-    cpu_entry.draw_area = gtk_drawing_area_new();
-    gtk_widget_set_size_request( cpu_entry.draw_area, section.graph.w,
-                                                      section.graph.h );
-    gtk_widget_show( cpu_entry.draw_area );
-    gtk_widget_set_valign( cpu_entry.draw_area, GTK_ALIGN_CENTER );
-    gtk_box_pack_start( GTK_BOX( pan->wrap ), cpu_entry.draw_area,
-                                              FALSE, FALSE, 0 );
-    g_signal_connect( G_OBJECT( cpu_entry.draw_area ), "draw",
-                      G_CALLBACK( draw ), &section );
+    entries_init( &pan->entries, 10 );
+    entries_add( &pan->entries, pan, &section );
 }

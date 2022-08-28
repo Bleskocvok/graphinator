@@ -13,17 +13,10 @@ G_BEGIN_DECLS
 #include <stdbool.h>        // bool, true, false
 
 
-typedef struct
-{
-    XfcePanelPlugin* plugin;
-
-    GtkWidget* ebox;
-    GtkWidget* wrap;
-
-} panel_t;
-
+#define M_COUNT( x )  ( sizeof( x ) / sizeof( *x ) )
 
 #define MK_RGB( r, g, b ) { r / 255.0, g / 255.0, b / 255.0 }
+
 
 typedef struct
 {
@@ -85,6 +78,32 @@ typedef struct
     GtkWidget* label;
 
 } panel_entry_t;
+
+
+typedef struct
+{
+    panel_entry_t* ptr;
+    size_t count;
+    size_t alloc;
+
+} entries_t;
+
+
+typedef struct
+{
+    XfcePanelPlugin* plugin;
+
+    GtkWidget* ebox;
+    GtkWidget* wrap;
+
+    entries_t entries;
+
+} panel_t;
+
+
+static void entries_init( entries_t* entries, size_t reserved );
+static void entries_free( entries_t* entries );
+static void entries_add( entries_t* entries, panel_t* pan, section_t* sec );
 
 
 G_END_DECLS
