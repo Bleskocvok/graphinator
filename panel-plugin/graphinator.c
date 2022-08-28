@@ -28,6 +28,40 @@ static void plugin_construct( XfcePanelPlugin* plugin );
 XFCE_PANEL_PLUGIN_REGISTER( plugin_construct );
 
 
+static void panel_free( XfcePanelPlugin* plugin, gpointer ptr );
+
+static void* init_cpu_data( void );
+
+static void free_cpu_data( void* ptr );
+
+static double collect_cpu_data( void* ptr );
+
+
+static section_t section =
+{
+    .collector = (collector_t){ .collect = collect_cpu_data,
+                                .init = init_cpu_data,
+                                .free = free_cpu_data,       },
+
+    .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
+                        .pad_x =  1, .pad_y =  1,
+                        .h     = 24, .w     =  0,
+                        .rgb_on  = MK_RGB( 255, 128, 128 ),
+                        .rgb_off = MK_RGB( 102, 102, 102 ),  },
+
+    .interval = 750,
+    .max_value = 100,
+    .use_max_value = true,
+    .show_label = true,
+};
+
+
+static panel_entry_t cpu_entry = (panel_entry_t)
+{
+    .section = &section,
+};
+
+
 static void panel_free( XfcePanelPlugin* plugin, gpointer ptr )
 {
     panel_t* pan = ptr;
@@ -53,6 +87,8 @@ static gboolean collector( gpointer ptr )
 
     gtk_widget_queue_draw_area( ent->draw_area, 0, 0, ent->section->graph.w,
                                                       ent->section->graph.h );
+
+    // TODO: change label if .use_label == true
 
     return G_SOURCE_CONTINUE;
 }
@@ -86,7 +122,7 @@ static double collect_cpu_data( void* ptr )
     unsigned long long total =  ( proc_stat_total( &stat )
                                 - proc_stat_total( prev_stat ) );
 
-    double frac = total == 0 ? 0  // avoid division by zero
+    double frac = total == 0 ? 0  // <-- avoid division by zero
                              : ( (double) ( proc_stat_work( &stat )
                                           - proc_stat_work( prev_stat ) )
                                / (double) total );
@@ -136,31 +172,6 @@ static void draw( GtkWidget* widget, cairo_t* cr, gpointer ptr )
         }
     }
 }
-
-
-static section_t section =
-{
-    .collector = (collector_t){ .collect = collect_cpu_data,
-                                .init = init_cpu_data,
-                                .free = free_cpu_data,       },
-
-    .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
-                        .pad_x =  1, .pad_y =  1,
-                        .h     = 24, .w     =  0,
-                        .rgb_on  = MK_RGB( 255, 128, 128 ),
-                        .rgb_off = MK_RGB( 102, 102, 102 ),  },
-
-    .interval = 750,
-    .max_value = 100,
-    .use_max_value = true,
-    .show_label = true,
-};
-
-
-static panel_entry_t cpu_entry = (panel_entry_t)
-{
-    .section = &section,
-};
 
 
 static void plugin_construct( XfcePanelPlugin* plugin )
