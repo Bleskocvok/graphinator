@@ -45,7 +45,7 @@ static section_t section =
 
     .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
                         .pad_x =  1, .pad_y =  1,
-                        .h     = 24, .w     =  0,
+                        .h     = 28, .w     =  0,
                         .rgb_on  = MK_RGB( 255, 128, 128 ),
                         .rgb_off = MK_RGB( 102, 102, 102 ),  },
 
@@ -53,11 +53,14 @@ static section_t section =
     .max_value = 100,
     .use_max_value = true,
     .show_label = true,
+    .label_fmt = " cpu\n%3.0f %%",
 };
 
 
 static void panel_free( XfcePanelPlugin* plugin, gpointer ptr )
 {
+    (void) plugin;
+
     panel_t* pan = ptr;
 
     // destroy the encapsulating widget and all children
@@ -89,7 +92,22 @@ static gboolean collector( gpointer ptr )
     gtk_widget_queue_draw_area( ent->draw_area, 0, 0, ent->section->graph.w,
                                                       ent->section->graph.h );
 
-    // TODO: change label if .use_label == true
+    // TODO: optimize probably
+    // TODO: also make more general
+    if ( ent->section->show_label )
+    {
+        char buff[ 256 ] = { 0 };
+        snprintf( buff, sizeof( buff ), ent->section->label_fmt, val );
+        // gtk_label_set_text( GTK_LABEL( ent->label ), buff );
+
+        char* markup = g_markup_printf_escaped( "<tt>"
+                                                "<span size=\"small\">"
+                                                "%s"
+                                                "</span>"
+                                                "</tt>", buff );
+        gtk_label_set_markup( GTK_LABEL( ent->label ), markup );
+        g_free( markup );
+    }
 
     return G_SOURCE_CONTINUE;
 }
@@ -193,15 +211,33 @@ static void entries_free( entries_t* entries )
 static void entries_add( entries_t* entries, panel_t* pan, section_t* sec )
 {
     // add to collection
+    if ( entries->count == entries->alloc )
+    {
+        entries->alloc *= 2;
+        if ( !( entries->ptr = realloc( entries->ptr, entries->alloc ) ) )
+        {
+            // TODO: handle allocation fail
+            return;
+        }
+    }
 
     entries->ptr[ entries->count ] = (panel_entry_t){ .section = sec };
     panel_entry_t* entry = &entries->ptr[ entries->count ];
     ++entries->count;
 
-    // ui bindings and callbacks
+    // add label
+    if ( sec->show_label )
+    {
+        entry->label = gtk_label_new( "" );
+        gtk_widget_show( entry->label );
+        // gtk_widget_set_size_request( GTK_WIDGET( entry->label ), 48, 24 );
+        gtk_box_pack_start( GTK_BOX( pan->wrap ), entry->label,
+                                                  FALSE, FALSE, 0 );
+    }
 
+    // setup interval
     g_timeout_add( sec->interval, G_SOURCE_FUNC( collector ), entry );
-
+    // setup draw area
     entry->draw_area = gtk_drawing_area_new();
     gtk_widget_set_size_request( entry->draw_area, section.graph.w,
                                                    section.graph.h );
@@ -238,7 +274,7 @@ static void plugin_construct( XfcePanelPlugin* plugin )
                       G_CALLBACK( panel_free ), pan );
 
     // TODO
-    const int history_size = 10;
+    const int history_size = 11;
     data_init( &section.data, history_size );
 
     section.graph.w = history_size * ( section.graph.blk_w
