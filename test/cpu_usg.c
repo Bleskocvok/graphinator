@@ -1,5 +1,6 @@
 
 #include "../panel-plugin/cpu_info.h"
+#include "../panel-plugin/mem_info.h"
 
 // usleep
 #define _BSD_SOURCE
@@ -47,6 +48,11 @@ int main()
         printf( "%s\n", buf );
 
         prev_stat = stat;
+
+        proc_mem_t memory;
+        if ( proc_mem_read( &memory ) == -1 )
+            return 1;
+        printf( "mem  tot %lu ava %lu\n", memory.total, memory.avail );
 
         usleep( 750 * 1e3 );
     }
