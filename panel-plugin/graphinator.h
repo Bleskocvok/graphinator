@@ -4,6 +4,10 @@
 #define __GRAPHINATOR_H__
 
 
+#include <gtk/gtk.h>    // G_BEGIN_DECLS, GtkWidget, GtkContainer,
+                        // GtkOrientation
+
+
 G_BEGIN_DECLS
 
 
@@ -91,8 +95,6 @@ typedef struct
 
 typedef struct
 {
-    XfcePanelPlugin* plugin;
-
     GtkWidget* ebox;
     GtkWidget* wrap;
 
@@ -101,9 +103,15 @@ typedef struct
 } panel_t;
 
 
-static void entries_init( entries_t* entries, size_t reserved );
-static void entries_free( entries_t* entries );
-static void entries_add( entries_t* entries, panel_t* pan, section_t* sec );
+void entries_init( entries_t* entries, size_t reserved );
+void entries_free( entries_t* entries );
+void entries_add( entries_t* entries, panel_t* pan, section_t* sec );
+
+
+panel_t* plugin_construct_in_container( GtkContainer* container,
+                                        GtkOrientation orient );
+
+void add_sections( panel_t* );
 
 
 G_END_DECLS
