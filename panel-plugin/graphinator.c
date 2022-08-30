@@ -1,7 +1,6 @@
 
-// gtk, xfce
+// gtk
 #include <gtk/gtk.h>
-#include <libxfce4panel/libxfce4panel.h>
 
 // custom
 #include "graphinator.h"
@@ -15,16 +14,6 @@
 
 #define  M_MIN( x, y )  ( ( ( x ) > ( y ) ) ? ( y ) : ( x ) )
 #define  M_MAX( x, y )  ( ( ( x ) > ( y ) ) ? ( x ) : ( y ) )
-
-
-//
-// The plugin entry point
-//
-static void plugin_construct( XfcePanelPlugin* plugin );
-XFCE_PANEL_PLUGIN_REGISTER( plugin_construct );
-
-
-static void panel_free( XfcePanelPlugin* plugin, gpointer ptr );
 
 
 static void* init_cpu_data( void );
@@ -75,28 +64,6 @@ static section_t sec_mem =
     .show_label = true,
     .label_fmt = " mem\n%3.0f%% ",
 };
-
-
-static void panel_free( XfcePanelPlugin* plugin, gpointer ptr )
-{
-    (void) plugin;
-
-    panel_t* pan = ptr;
-
-    // destroy the encapsulating widget and all children
-    gtk_widget_destroy( pan->ebox );
-
-    for ( size_t i = 0; i < pan->entries.count; ++i )
-    {
-        data_free( &pan->entries.ptr[ i ].section->data );
-        collector_t* coll = &pan->entries.ptr[ i ].section->collector;
-        coll->free( coll->ptr );
-    }
-
-    entries_free( &pan->entries );
-
-    g_slice_free( panel_t, pan );
-}
 
 
 static gboolean collector( gpointer ptr )
@@ -154,7 +121,11 @@ static double collect_mem_data( void* ptr )
     if ( sysinfo( &info ) < 0)
         return 0;
 
-    return 100 - ( info.freeram / (double) info.totalram * 100.0 );
+    // return 100 - ( (double) ( info.freeram + info.freeswap )
+    //              / (double) ( info.totalram + info.totalswap ) * 100.0 );
+    return   (double) ( info.totalram - info.freeram )
+           / (double) ( info.totalram )
+           * 100.0;
 }
 
 
@@ -238,7 +209,7 @@ static void draw( GtkWidget* widget, cairo_t* cr, gpointer ptr )
 }
 
 
-static void entries_init( entries_t* entries, size_t reserved )
+void entries_init( entries_t* entries, size_t reserved )
 {
     *entries = (entries_t){ 0 };
     entries->ptr = calloc( reserved, sizeof( panel_entry_t ) );
@@ -246,16 +217,16 @@ static void entries_init( entries_t* entries, size_t reserved )
 }
 
 
-static void entries_free( entries_t* entries )
+void entries_free( entries_t* entries )
 {
     free( entries->ptr );
     *entries = (entries_t){ 0 };
 }
 
 
-static void entries_add( entries_t* entries, panel_t* pan, section_t* sec )
+void entries_add( entries_t* entries, panel_t* pan, section_t* sec )
 {
-    // add to collection
+    // reallocate if necessary
     if ( entries->count == entries->alloc )
     {
         entries->alloc *= 2;
@@ -266,6 +237,7 @@ static void entries_add( entries_t* entries, panel_t* pan, section_t* sec )
         }
     }
 
+    // add to collection
     entries->ptr[ entries->count ] = (panel_entry_t){ .section = sec };
     panel_entry_t* entry = &entries->ptr[ entries->count ];
     ++entries->count;
@@ -295,44 +267,8 @@ static void entries_add( entries_t* entries, panel_t* pan, section_t* sec )
 }
 
 
-static void orientation_changed( XfcePanelPlugin* plugin,
-                                 GtkOrientation orientation,
-                                 panel_t* pan )
+void add_sections( panel_t* pan )
 {
-    gtk_orientable_set_orientation( GTK_ORIENTABLE( pan->wrap ), orientation );
-    // for ( size_t i = 0; i < pan->entries.count; ++i )
-    // {
-    //     gtk_orientable_set_orientation( GTK_ORIENTABLE(
-    //                                         pan->entries.ptr[ i ].label ),
-    //                                     orientation );
-    //     gtk_orientable_set_orientation( GTK_ORIENTABLE(
-    //                                         pan->entries.ptr[ i ].draw_area ),
-    //                                     orientation );
-    // }
-}
-
-
-static void plugin_construct( XfcePanelPlugin* plugin )
-{
-    panel_t* pan = g_slice_new( panel_t );
-    *pan = (panel_t){ 0 };
-
-    pan->plugin = plugin;
-
-    pan->ebox = gtk_event_box_new();
-    gtk_widget_show( pan->ebox );
-    gtk_container_add( GTK_CONTAINER( plugin ), pan->ebox );
-
-    pan->wrap = gtk_box_new( xfce_panel_plugin_get_orientation( plugin ), 2 );
-    gtk_widget_show( pan->wrap );
-    gtk_container_add( GTK_CONTAINER( pan->ebox ), pan->wrap );
-
-    g_signal_connect( G_OBJECT( plugin ), "free-data",
-                      G_CALLBACK( panel_free ), pan );
-
-    g_signal_connect( G_OBJECT( plugin ), "orientation-changed",
-                      G_CALLBACK( orientation_changed ), pan );
-
     // TODO
     const int history_size = 11;
     data_init( &section.data, history_size );
@@ -355,4 +291,22 @@ static void plugin_construct( XfcePanelPlugin* plugin )
     entries_init( &pan->entries, 10 );
     entries_add( &pan->entries, pan, &section );
     entries_add( &pan->entries, pan, &sec_mem );
+}
+
+
+panel_t* plugin_construct_in_container( GtkContainer* container,
+                                        GtkOrientation orient )
+{
+    panel_t* pan = g_slice_new( panel_t );
+    *pan = (panel_t){ 0 };
+
+    pan->ebox = gtk_event_box_new();
+    gtk_widget_show( pan->ebox );
+    gtk_container_add( GTK_CONTAINER( container ), pan->ebox );
+
+    pan->wrap = gtk_box_new( orient, 2 );
+    gtk_widget_show( pan->wrap );
+    gtk_container_add( GTK_CONTAINER( pan->ebox ), pan->wrap );
+
+    return pan;
 }
