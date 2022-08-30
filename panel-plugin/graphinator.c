@@ -5,6 +5,7 @@
 // custom
 #include "graphinator.h"
 #include "cpu_info.h"
+#include "mem_info.h"
 #include "data.h"
 
 // c
@@ -100,7 +101,6 @@ static gboolean collector( gpointer ptr )
 }
 
 
-#include <sys/sysinfo.h>
 static void* init_mem_data( void )
 {
     return NULL;
@@ -117,15 +117,11 @@ static double collect_mem_data( void* ptr )
 {
     (void) ptr;
 
-    struct sysinfo info;
-    if ( sysinfo( &info ) < 0)
-        return 0;
-
-    // return 100 - ( (double) ( info.freeram + info.freeswap )
-    //              / (double) ( info.totalram + info.totalswap ) * 100.0 );
-    return   (double) ( info.totalram - info.freeram )
-           / (double) ( info.totalram )
-           * 100.0;
+    proc_mem_t info;
+    proc_mem_read( &info );
+    if ( info.total == 0 )
+        return -1;
+    return ( info.total - info.avail ) / (double) info.total * 100;
 }
 
 
