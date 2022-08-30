@@ -1,8 +1,4 @@
 
-// getline
-#define _POSIX_C_SOURCE 200809L
-#define _GNU_SOURCE
-
 // gtk, xfce
 #include <gtk/gtk.h>
 #include <libxfce4panel/libxfce4panel.h>
