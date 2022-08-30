@@ -21,15 +21,15 @@ int proc_stat_read_str( proc_stat_t* stat, const char* str )
     int i = 0;
     char* end;
 
-    for (; i < PROC_STAT_TYPE_COUNT; ++i)
+    for ( ; i < PROC_STAT_TYPE_COUNT; ++i )
     {
         // skip whitespace
-        while (isspace( str[ 0 ] ))
+        while ( isspace( str[ 0 ] ) )
             ++str;
 
         // parse number
         stat->fields[ i ] = strtoull( str, &end, 10 );
-        if (end == str)
+        if ( end == str )
             break;
         str = end;
     }
@@ -48,23 +48,23 @@ int proc_stat_read( proc_stat_t* stat, int stat_count )
 
     int i = 0;
 
-    if (ferror( file ))
+    if ( ferror( file ) )
         return fclose( file ), 0;
 
-    for (; !feof( file ) && i < stat_count; ++i)
+    for ( ; !feof( file ) && i < stat_count; ++i )
     {
         ssize_t len = getline( &buf, &allocated, file ) - 1;  // -1 cause of \n
         buf[ len ] = '\0';                                    // remove newline
 
         char* line = buf;
 
-        if (strncmp( line, "cpu", 3 ) != 0)
+        if ( strncmp( line, "cpu", 3 ) != 0 )
             break;
 
         line += 3;
 
         // skip cpu digits
-        while (len > 0 && isdigit( line[ 0 ] ))
+        while ( len > 0 && isdigit( line[ 0 ] ) )
             ++line;
 
         proc_stat_read_str( stat + i, line );
@@ -81,7 +81,7 @@ int proc_stat_read( proc_stat_t* stat, int stat_count )
 unsigned long long proc_stat_total( proc_stat_t* stat )
 {
     unsigned long long res = 0;
-    for (int i = 0; i < PROC_STAT_TYPE_COUNT; ++i)
+    for ( int i = 0; i < PROC_STAT_TYPE_COUNT; ++i )
         res += stat->fields[ i ];
     return res;
 }
