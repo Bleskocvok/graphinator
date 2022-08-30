@@ -30,11 +30,15 @@ XFCE_PANEL_PLUGIN_REGISTER( plugin_construct );
 
 static void panel_free( XfcePanelPlugin* plugin, gpointer ptr );
 
+
 static void* init_cpu_data( void );
-
 static void free_cpu_data( void* ptr );
-
 static double collect_cpu_data( void* ptr );
+
+
+static void* init_mem_data( void );
+static void free_mem_data( void* ptr );
+static double collect_mem_data( void* ptr );
 
 
 static section_t section =
@@ -53,7 +57,27 @@ static section_t section =
     .max_value = 100,
     .use_max_value = true,
     .show_label = true,
-    .label_fmt = " cpu\n%3.0f %%",
+    .label_fmt = " cpu\n%3.0f%% ",
+};
+
+
+static section_t sec_mem =
+{
+    .collector = (collector_t){ .collect = collect_mem_data,
+                                .init = init_mem_data,
+                                .free = free_mem_data,       },
+
+    .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
+                        .pad_x =  1, .pad_y =  1,
+                        .h     = 28, .w     =  0,
+                        .rgb_on  = MK_RGB( 221, 187,  51 ),
+                        .rgb_off = MK_RGB( 102, 102, 102 ),  },
+
+    .interval = 750,
+    .max_value = 100,
+    .use_max_value = true,
+    .show_label = true,
+    .label_fmt = " mem\n%3.0f%% ",
 };
 
 
@@ -110,6 +134,31 @@ static gboolean collector( gpointer ptr )
     }
 
     return G_SOURCE_CONTINUE;
+}
+
+
+#include <sys/sysinfo.h>
+static void* init_mem_data( void )
+{
+    return NULL;
+}
+
+
+static void free_mem_data( void* ptr )
+{
+    (void) ptr;
+}
+
+
+static double collect_mem_data( void* ptr )
+{
+    (void) ptr;
+
+    struct sysinfo info;
+    if ( sysinfo( &info ) < 0)
+        return 0;
+
+    return 100 - ( info.freeram / (double) info.totalram * 100.0 );
 }
 
 
@@ -239,14 +288,14 @@ static void entries_add( entries_t* entries, panel_t* pan, section_t* sec )
     g_timeout_add( sec->interval, G_SOURCE_FUNC( collector ), entry );
     // setup draw area
     entry->draw_area = gtk_drawing_area_new();
-    gtk_widget_set_size_request( entry->draw_area, section.graph.w,
-                                                   section.graph.h );
+    gtk_widget_set_size_request( entry->draw_area, sec->graph.w,
+                                                   sec->graph.h );
     gtk_widget_show( entry->draw_area );
     gtk_widget_set_valign( entry->draw_area, GTK_ALIGN_CENTER );
     gtk_box_pack_start( GTK_BOX( pan->wrap ), entry->draw_area,
                                               FALSE, FALSE, 0 );
     g_signal_connect( G_OBJECT( entry->draw_area ), "draw",
-                      G_CALLBACK( draw ), &section );
+                      G_CALLBACK( draw ), sec );
 }
 
 
@@ -265,18 +314,12 @@ static void plugin_construct( XfcePanelPlugin* plugin )
     gtk_widget_show( pan->wrap );
     gtk_container_add( GTK_CONTAINER( pan->ebox ), pan->wrap );
 
-    // pan->label = gtk_label_new( "" );
-    // gtk_widget_show( pan->label );
-    // gtk_widget_set_size_request( GTK_WIDGET( pan->label ), 100, 24 );
-    // gtk_box_pack_start( GTK_BOX( pan->wrap ), pan->label, FALSE, FALSE, 0 );
-
     g_signal_connect( G_OBJECT( plugin ), "free-data",
                       G_CALLBACK( panel_free ), pan );
 
     // TODO
     const int history_size = 11;
     data_init( &section.data, history_size );
-
     section.graph.w = history_size * ( section.graph.blk_w
                                      + section.graph.pad_x );
 
@@ -284,8 +327,16 @@ static void plugin_construct( XfcePanelPlugin* plugin )
     if ( !section.collector.ptr )
     {
         // TODO: error
+        // TODO: shit, might not be error, therefore refactor necessary
     }
+
+    data_init( &sec_mem.data, history_size );
+    sec_mem.graph.w = history_size * ( sec_mem.graph.blk_w
+                                     + sec_mem.graph.pad_x );
+
+    sec_mem.collector.ptr = sec_mem.collector.init();
 
     entries_init( &pan->entries, 10 );
     entries_add( &pan->entries, pan, &section );
+    entries_add( &pan->entries, pan, &sec_mem );
 }
