@@ -299,6 +299,23 @@ static void entries_add( entries_t* entries, panel_t* pan, section_t* sec )
 }
 
 
+static void orientation_changed( XfcePanelPlugin* plugin,
+                                 GtkOrientation orientation,
+                                 panel_t* pan )
+{
+    gtk_orientable_set_orientation( GTK_ORIENTABLE( pan->wrap ), orientation );
+    // for ( size_t i = 0; i < pan->entries.count; ++i )
+    // {
+    //     gtk_orientable_set_orientation( GTK_ORIENTABLE(
+    //                                         pan->entries.ptr[ i ].label ),
+    //                                     orientation );
+    //     gtk_orientable_set_orientation( GTK_ORIENTABLE(
+    //                                         pan->entries.ptr[ i ].draw_area ),
+    //                                     orientation );
+    // }
+}
+
+
 static void plugin_construct( XfcePanelPlugin* plugin )
 {
     panel_t* pan = g_slice_new( panel_t );
@@ -316,6 +333,9 @@ static void plugin_construct( XfcePanelPlugin* plugin )
 
     g_signal_connect( G_OBJECT( plugin ), "free-data",
                       G_CALLBACK( panel_free ), pan );
+
+    g_signal_connect( G_OBJECT( plugin ), "orientation-changed",
+                      G_CALLBACK( orientation_changed ), pan );
 
     // TODO
     const int history_size = 11;
