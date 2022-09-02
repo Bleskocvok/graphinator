@@ -72,7 +72,7 @@ static void plugin_about( XfcePanelPlugin* plugin )
                            "program-name", "graphinator",
                            "comments",     "Graphinator is a plugin",
                            "website",      "website.com",
-                           "copyright",    u8"Copyright © 2022 Jméno Příjmení\n",
+                           "copyright",    u8"Copyright © 2022 František Bráblík\n",
                            "authors",      NULL,
                            NULL );
 
