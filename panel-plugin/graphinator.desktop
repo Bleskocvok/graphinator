@@ -1,0 +1,10 @@
+[Xfce Panel]
+Type=X-XFCE-PanelPlugin
+Encoding=UTF-8
+Name=Graphinator
+Comment=Create graphs from periodic monitoring
+Icon=graphinator-plugin
+X-XFCE-Module=graphinator
+X-XFCE-Internal=false
+X-XFCE-Unique=false
+X-XFCE-API=2.0
