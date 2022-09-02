@@ -10,22 +10,22 @@ DIR_ICO="/usr/share/icons/hicolor"
 
 
 install -D -m 644                   \
-    -t $DIR_ICO/scalable/apps/      \
-    "icons/graphinator-plugin.svg"
+    "icons/graphinator_plugin.svg"  \
+    "$DIR_ICO/scalable/apps/graphinator-plugin.svg"
 
 
 install -D -m 644                   \
-    icons/48.graphinator-plugin.png \
-    "$DIR_ICO/48x48/apps/graphinator-plugin.png"
-
-
-install -D -m 644                   \
-    icons/24.graphinator-plugin.png \
+    icons/graphinator_plugin_24.png \
     "$DIR_ICO/24x24/apps/graphinator-plugin.png"
 
 
 install -D -m 644                   \
-    icons/64.graphinator-plugin.png \
+    icons/graphinator_plugin_48.png \
+    "$DIR_ICO/48x48/apps/graphinator-plugin.png"
+
+
+install -D -m 644                   \
+    icons/graphinator_plugin_64.png \
     "$DIR_ICO/64x64/apps/graphinator-plugin.png"
 
 
@@ -33,18 +33,18 @@ gtk-update-icon-cache $DIR_ICO
 
 
 
-NAME="graphinator"
-LIB="panel-plugin/.libs/lib$NAME.so"
+# NAME="graphinator"
+# LIB="panel-plugin/.libs/lib$NAME.so"
 
-DIR_LIB="/usr/lib/x86_64-linux-gnu"
-DIR_DESKTOP="/usr/share/xfce4/panel/plugins"
+# DIR_LIB="/usr/lib/x86_64-linux-gnu"
+# DIR_DESKTOP="/usr/share/xfce4/panel/plugins"
 
 
-install -m 744                      \
-    "$LIB"                          \
-    "$DIR_LIB/xfce4/panel/plugins/lib$NAME.so"
+# install -m 744                      \
+#     "$LIB"                          \
+#     "$DIR_LIB/xfce4/panel/plugins/lib$NAME.so"
 
-install -m 644                      \
-    "panel-plugin/$NAME.desktop"    \
-    "$DIR_DESKTOP/$NAME.desktop"
+# install -m 644                      \
+#     "panel-plugin/$NAME.desktop"    \
+#     "$DIR_DESKTOP/$NAME.desktop"
 

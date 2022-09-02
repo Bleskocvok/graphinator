@@ -9,6 +9,9 @@
 /panel-plugin/libgraphinator_la-*
 /panel-plugin/libgraphinator.la
 
+# icons
+/icons/*.png
+
 # autotools generated makefiles/configs
 Makefile
 Makefile.in
@@ -33,9 +36,6 @@ Makefile.in
 # fucking cache folders
 /m4/
 /autom4te.cache/
-
-# my garbage
-z.old.*
 
 # apparently autotools also generate package archives
 /*.tar.*
