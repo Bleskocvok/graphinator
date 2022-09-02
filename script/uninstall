@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# run as: $ sudo sh script/uninstall
+
+
+set -x
+
+
+DIR_ICO="/usr/share/icons/hicolor"
+
+
+rm \
+    $DIR_ICO/scalable/apps/graphinator-plugin.svg   \
+    $DIR_ICO/24x24/apps/graphinator-plugin.png      \
+    $DIR_ICO/48x48/apps/graphinator-plugin.png      \
+    $DIR_ICO/64x64/apps/graphinator-plugin.png
+
+
