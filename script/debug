@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# run as script/debug
+# run as: $ sudo sh script/debug
 
 NAME=graphinator
 LIB=panel-plugin/.libs/lib$NAME.so
