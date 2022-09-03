@@ -13,10 +13,6 @@
 #include <stdio.h>          // snprintf
 
 
-#define  M_MIN( x, y )  ( ( ( x ) > ( y ) ) ? ( y ) : ( x ) )
-#define  M_MAX( x, y )  ( ( ( x ) > ( y ) ) ? ( x ) : ( y ) )
-
-
 static void* init_cpu_data( void );
 static void free_cpu_data( void* ptr );
 static double collect_cpu_data( void* ptr );
@@ -27,6 +23,9 @@ static void free_mem_data( void* ptr );
 static double collect_mem_data( void* ptr );
 
 
+static void draw_led( GtkWidget* widget, cairo_t* cr, void* ptr );
+
+
 static section_t section =
 {
     .collector = (collector_t){ .collect = collect_cpu_data,
@@ -35,10 +34,11 @@ static section_t section =
 
     .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
                         .pad_x =  1, .pad_y =  1,
-                        .h     = 28, .w     =  0,
+                        .h     = 28, .w     = 33,
                         .rgb_on  = MK_RGB( 255, 128, 128 ),
                         .rgb_off = MK_RGB( 102, 102, 102 ),  },
 
+    .draw_func = draw_led,
     .interval = 750,
     .max_value = 100,
     .use_max_value = true,
@@ -55,16 +55,23 @@ static section_t sec_mem =
 
     .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
                         .pad_x =  1, .pad_y =  1,
-                        .h     = 28, .w     =  0,
+                        .h     = 28, .w     = 33,
                         .rgb_on  = MK_RGB( 221, 187,  51 ),
                         .rgb_off = MK_RGB( 102, 102, 102 ),  },
 
+    .draw_func = draw_led,
     .interval = 750,
     .max_value = 100,
     .use_max_value = true,
     .show_label = true,
     .label_fmt = " mem\n%3.0f%% ",
 };
+
+
+int graph_history_size( graph_t* graph )
+{
+    return graph->w / ( graph->blk_w + graph->pad_x );
+}
 
 
 static gboolean collector( gpointer ptr )
@@ -164,7 +171,7 @@ static double collect_cpu_data( void* ptr )
 }
 
 
-static void draw( GtkWidget* widget, cairo_t* cr, gpointer ptr )
+static void draw_led( GtkWidget* widget, cairo_t* cr, void* ptr )
 {
     section_t* sec = ptr;
 
@@ -178,7 +185,7 @@ static void draw( GtkWidget* widget, cairo_t* cr, gpointer ptr )
 
     int count = data_count( &sec->data );
 
-    double blk = sec->max_value / (double)rows;
+    double blk = sec->max_value / (double) rows;
 
     gtk_render_background( gtk_widget_get_style_context( widget ),
                            cr, 0, 0, g.w, g.h);
@@ -259,29 +266,16 @@ void entries_add( entries_t* entries, panel_t* pan, section_t* sec )
     gtk_box_pack_start( GTK_BOX( pan->wrap ), entry->draw_area,
                                               FALSE, FALSE, 0 );
     g_signal_connect( G_OBJECT( entry->draw_area ), "draw",
-                      G_CALLBACK( draw ), sec );
+                      G_CALLBACK( entry->section->draw_func ), sec );
 }
 
 
 void add_sections( panel_t* pan )
 {
-    // TODO
-    const int history_size = 11;
-    data_init( &section.data, history_size );
-    section.graph.w = history_size * ( section.graph.blk_w
-                                     + section.graph.pad_x );
-
+    data_init( &section.data, graph_history_size( &section.graph ) );
     section.collector.ptr = section.collector.init();
-    if ( !section.collector.ptr )
-    {
-        // TODO: error
-        // TODO: shit, might not be error, therefore refactor necessary
-    }
 
-    data_init( &sec_mem.data, history_size );
-    sec_mem.graph.w = history_size * ( sec_mem.graph.blk_w
-                                     + sec_mem.graph.pad_x );
-
+    data_init( &sec_mem.data, graph_history_size( &sec_mem.graph ) );
     sec_mem.collector.ptr = sec_mem.collector.init();
 
     entries_init( &pan->entries, 10 );

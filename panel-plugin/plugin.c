@@ -15,9 +15,6 @@ static void plugin_construct( XfcePanelPlugin* plugin );
 XFCE_PANEL_PLUGIN_REGISTER( plugin_construct );
 
 
-static void panel_free( XfcePanelPlugin* plugin, gpointer ptr );
-
-
 static void panel_free( XfcePanelPlugin* plugin, gpointer ptr )
 {
     (void) plugin;

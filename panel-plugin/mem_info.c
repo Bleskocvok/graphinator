@@ -82,6 +82,8 @@ int proc_mem_read( proc_mem_t* mem_info )
         }
         else
         {
+            // we expect the first three lines to contain the three
+            // if one of them doesn't, return with error
             return -1;
         }
     }

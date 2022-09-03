@@ -21,6 +21,9 @@ G_BEGIN_DECLS
 
 #define MK_RGB( r, g, b ) { r / 255.0, g / 255.0, b / 255.0 }
 
+#define  M_MIN( x, y )  ( ( ( x ) > ( y ) ) ? ( y ) : ( x ) )
+#define  M_MAX( x, y )  ( ( ( x ) > ( y ) ) ? ( x ) : ( y ) )
+
 
 typedef struct
 {
@@ -54,6 +57,10 @@ typedef struct
 } collector_t;
 
 
+typedef void   ( *draw_func_t )    ( GtkWidget* widget,
+                                     cairo_t* cr,
+                                     void* sec );
+
 typedef struct
 {
     collector_t collector;
@@ -67,6 +74,8 @@ typedef struct
     bool show_label    : 1;
 
     graph_t graph;
+
+    draw_func_t draw_func;
 
     data_t data;
     double last_value;
@@ -101,6 +110,9 @@ typedef struct
     entries_t entries;
 
 } panel_t;
+
+
+int graph_history_size( graph_t* graph );
 
 
 void entries_init( entries_t* entries, size_t reserved );
