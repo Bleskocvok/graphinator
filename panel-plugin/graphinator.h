@@ -13,6 +13,7 @@ G_BEGIN_DECLS
 
 #include "cpu_info.h"
 #include "data.h"
+#include "drawing.h"
 
 #include <stdbool.h>        // bool, true, false
 
@@ -20,26 +21,6 @@ G_BEGIN_DECLS
 #define M_COUNT( x )  ( sizeof( x ) / sizeof( *x ) )
 
 #define MK_RGB( r, g, b ) { r / 255.0, g / 255.0, b / 255.0 }
-
-#define  M_MIN( x, y )  ( ( ( x ) > ( y ) ) ? ( y ) : ( x ) )
-#define  M_MAX( x, y )  ( ( ( x ) > ( y ) ) ? ( x ) : ( y ) )
-
-
-typedef struct
-{
-    int blk_w,
-        blk_h;
-
-    int pad_x,
-        pad_y;
-
-    int w,
-        h;
-
-    double rgb_off[ 3 ];
-    double rgb_on[ 3 ];
-
-} graph_t;
 
 
 typedef double ( *collect_func_t ) ( void* );
@@ -57,28 +38,17 @@ typedef struct
 } collector_t;
 
 
-typedef void   ( *draw_func_t )    ( GtkWidget* widget,
-                                     cairo_t* cr,
-                                     void* sec );
-
 typedef struct
 {
     collector_t collector;
 
     int interval;
 
-    double max_value;
     const char* label_fmt;
-
-    bool use_max_value : 1;
-    bool show_label    : 1;
 
     graph_t graph;
 
     draw_func_t draw_func;
-
-    data_t data;
-    double last_value;
 
 } section_t;
 

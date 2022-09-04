@@ -27,7 +27,7 @@ static void panel_free( XfcePanelPlugin* plugin, gpointer ptr )
 
     for ( size_t i = 0; i < pan->entries.count; ++i )
     {
-        data_free( &pan->entries.ptr[ i ].section->data );
+        data_free( &pan->entries.ptr[ i ].section->graph.data );
         collector_t* coll = &pan->entries.ptr[ i ].section->collector;
         coll->free( coll->ptr );
     }

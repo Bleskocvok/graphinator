@@ -17,7 +17,8 @@ libgraphinator_la_SOURCES = \
 	cpu_info.c              \
 	data.c                  \
 	plugin.c                \
-	mem_info.c              
+	mem_info.c              \
+	drawing.c               
 
 libgraphinator_la_CFLAGS =  \
 	-std=c11 -Wall -Wextra  \
