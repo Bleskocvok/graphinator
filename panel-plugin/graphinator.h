@@ -82,9 +82,6 @@ typedef struct
 } panel_t;
 
 
-int graph_history_size( graph_t* graph );
-
-
 void entries_init( entries_t* entries, size_t reserved );
 void entries_free( entries_t* entries );
 void entries_add( entries_t* entries, panel_t* pan, section_t* sec );

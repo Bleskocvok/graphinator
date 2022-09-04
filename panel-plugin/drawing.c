@@ -4,21 +4,36 @@
 #include <gtk/gtk.h>
 
 
+int graph_cols( const graph_t* graph )
+{
+    return graph->w / ( graph->blk_w + graph->pad_x );
+}
+
+
+double graph_max_value( const graph_t* graph )
+{
+    if ( graph->max_value > 0 )
+        return graph->max_value;
+
+    double max = -1;
+    for ( size_t i = 0; i < data_count( &graph->data ); i++ )
+        if ( max < data_at( &graph->data, i ) )
+            max = data_at( &graph->data, i );
+    return max;
+}
+
+
 void draw_led( GtkWidget* widget, cairo_t* cr, void* ptr )
 {
     graph_t* sec = ptr;
-
     const graph_t g = *sec;
 
     int rows = g.h / ( g.blk_h + g.pad_y );
-    int cols = g.w / ( g.blk_w + g.pad_x );
-
-    int cap = data_capacity( &sec->data );
-    cols = M_MIN( cap, cols );
-
+    int cols = graph_cols( &g );
     int count = data_count( &sec->data );
 
-    double blk = sec->max_value / (double) rows;
+    double max_value = graph_max_value( &g );
+    double blk = max_value / (double) rows;
 
     gtk_render_background( gtk_widget_get_style_context( widget ),
                            cr, 0, 0, g.w, g.h);
@@ -48,17 +63,13 @@ void draw_led( GtkWidget* widget, cairo_t* cr, void* ptr )
 void draw_lin( GtkWidget* widget, cairo_t* cr, void* ptr )
 {
     graph_t* sec = ptr;
-
     const graph_t g = *sec;
 
-    int cols = g.w / ( g.blk_w + g.pad_x );
-
-    int cap = data_capacity( &sec->data );
-    cols = M_MIN( cap, cols );
-
+    int cols = graph_cols( &g );
     int count = data_count( &sec->data );
 
-    double blk = g.h / (double) sec->max_value;
+    double max_value = graph_max_value( &g );
+    double blk = g.h / (double) max_value;
 
     gtk_render_background( gtk_widget_get_style_context( widget ),
                            cr, 0, 0, g.w, g.h);

@@ -13,19 +13,19 @@ void data_init( data_t* data, size_t capacity )
 }
 
 
-size_t data_count( data_t* data )
+size_t data_count( const data_t* data )
 {
     return data->count;
 }
 
 
-size_t data_capacity( data_t* data )
+size_t data_capacity( const data_t* data )
 {
     return data->capacity;
 }
 
 
-double data_at( data_t* data, size_t i )
+double data_at( const data_t* data, size_t i )
 {
     return data->vals[ (i + data->end) % data->capacity ];
 }

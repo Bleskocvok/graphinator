@@ -34,6 +34,10 @@ typedef struct
 } graph_t;
 
 
+int graph_cols( const graph_t* graph );
+double graph_max_value( const graph_t* graph );
+
+
 typedef void   ( *draw_func_t )    ( GtkWidget* widget,
                                      cairo_t* cr,
                                      void* sec );

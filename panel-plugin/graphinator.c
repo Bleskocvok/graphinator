@@ -61,12 +61,6 @@ static section_t sec_mem =
 };
 
 
-int graph_history_size( graph_t* graph )
-{
-    return graph->w / ( graph->blk_w + graph->pad_x );
-}
-
-
 static gboolean collector( gpointer ptr )
 {
     panel_entry_t* ent = ptr;
@@ -222,10 +216,10 @@ void entries_add( entries_t* entries, panel_t* pan, section_t* sec )
 
 void add_sections( panel_t* pan )
 {
-    data_init( &section.graph.data, graph_history_size( &section.graph ) );
+    data_init( &section.graph.data, graph_cols( &section.graph ) );
     section.collector.ptr = section.collector.init();
 
-    data_init( &sec_mem.graph.data, graph_history_size( &sec_mem.graph ) );
+    data_init( &sec_mem.graph.data, graph_cols( &sec_mem.graph ) );
     sec_mem.collector.ptr = sec_mem.collector.init();
 
     entries_init( &pan->entries, 10 );
