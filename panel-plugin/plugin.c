@@ -6,6 +6,7 @@
 // gtk, xfce
 #include <gtk/gtk.h>
 #include <libxfce4panel/libxfce4panel.h>
+#include <libxfce4ui/libxfce4ui.h>        // xfce_titled_dialog_new_with_buttons
 
 
 //
@@ -56,6 +57,45 @@ static void orientation_changed( XfcePanelPlugin* plugin,
 }
 
 
+static void plugin_settings_close( GtkWidget* dialog,
+                                   gint response,
+                                   XfcePanelPlugin* plugin )
+{
+    g_object_set_data( G_OBJECT( plugin ), "dialog", NULL );
+    xfce_panel_plugin_unblock_menu( plugin );
+    gtk_widget_destroy( dialog );
+}
+
+
+static void plugin_settings( XfcePanelPlugin* plugin, panel_t* pan )
+{
+    GtkWindow* parent;
+    GtkWidget* dia;
+
+    xfce_panel_plugin_block_menu( plugin );
+
+    parent = GTK_WINDOW( gtk_widget_get_toplevel( GTK_WIDGET( plugin ) ) );
+
+    dia = xfce_titled_dialog_new_with_buttons( "Graphinator settings",
+                                               parent,
+                                               GTK_DIALOG_DESTROY_WITH_PARENT,
+                                               "gtk-close", GTK_RESPONSE_OK,
+                                               NULL );
+
+    gtk_window_set_position( GTK_WINDOW( dia ), GTK_WIN_POS_CENTER );
+    gtk_window_set_icon_name( GTK_WINDOW( dia ), "graphinator-plugin" );
+
+    g_signal_connect( G_OBJECT( dia ), "response",
+                                       G_CALLBACK( plugin_settings_close ),
+                                       plugin );
+
+    gtk_widget_show( dia );
+}
+
+
+#define AUTHOR  "František Bráblík"
+#define WEBSITE "https://github.com/Bleskocvok/graphinator"
+
 static void plugin_about( XfcePanelPlugin* plugin )
 {
     (void) plugin;
@@ -68,9 +108,9 @@ static void plugin_about( XfcePanelPlugin* plugin )
                            "version",      "0.0.1",
                            "program-name", "graphinator",
                            "comments",     "Graphinator is a plugin",
-                           "website",      "website.com",
-                           "copyright",    u8"Copyright © 2022 František Bráblík\n",
-                           "authors",      NULL,
+                           "website",      WEBSITE,
+                           "copyright",    u8"Copyright © 2022 " AUTHOR "\n",
+                           "authors",      (const char*[]){ AUTHOR, NULL },
                            NULL );
 
     if ( ico )
@@ -93,6 +133,10 @@ static void plugin_construct( XfcePanelPlugin* plugin )
     xfce_panel_plugin_menu_show_about( plugin );
     g_signal_connect( G_OBJECT( plugin ), "about", G_CALLBACK( plugin_about ),
                                           NULL );
+
+    xfce_panel_plugin_menu_show_configure( plugin );
+    g_signal_connect( G_OBJECT( plugin ), "configure-plugin",
+                                          G_CALLBACK( plugin_settings ), NULL );
 
     add_sections( pan );
 }
