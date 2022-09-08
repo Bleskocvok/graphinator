@@ -1,7 +1,8 @@
 
 #include "plugin.h"
 
-#include "graphinator.h"  // plugin_construct_in_container, panel_t
+#include "graphinator.h"    // plugin_construct_in_container, panel_t
+#include "settings.h"       // settings_construct
 
 // gtk, xfce
 #include <gtk/gtk.h>
@@ -89,7 +90,16 @@ static void plugin_settings( XfcePanelPlugin* plugin, panel_t* pan )
                                        G_CALLBACK( plugin_settings_close ),
                                        plugin );
 
+    gtk_window_set_default_size( GTK_WINDOW( dia ), 300, 300 );
     gtk_widget_show( dia );
+
+    GtkWidget* box = gtk_box_new( GTK_ORIENTATION_VERTICAL, 6 );
+    gtk_widget_show( box );
+    GtkWidget* content = gtk_dialog_get_content_area( GTK_DIALOG( dia ) );
+    gtk_box_pack_start( GTK_BOX( content ), box, FALSE, FALSE, 0 );
+
+    settings_t settings = { 0 };
+    settings_construct( &settings, box );
 }
 
 
