@@ -97,6 +97,7 @@ static void plugin_settings( XfcePanelPlugin* plugin, panel_t* pan )
     gtk_widget_show( box );
     GtkWidget* content = gtk_dialog_get_content_area( GTK_DIALOG( dia ) );
     gtk_box_pack_start( GTK_BOX( content ), box, FALSE, FALSE, 0 );
+    gtk_container_set_border_width( GTK_CONTAINER( content ), 10 );
 
     settings_t settings = { 0 };
     settings_construct( &settings, box );
