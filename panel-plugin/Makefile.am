@@ -13,12 +13,13 @@ plugindir =                 \
 
 
 libgraphinator_la_SOURCES = \
-	graphinator.c           \
 	cpu_info.c              \
 	data.c                  \
-	plugin.c                \
 	mem_info.c              \
-	drawing.c               
+	drawing.c               \
+	graphinator.c           \
+	plugin.c                \
+	settings.c              
 
 libgraphinator_la_CFLAGS =  \
 	-std=c11 -Wall -Wextra  \
