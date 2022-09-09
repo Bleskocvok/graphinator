@@ -31,20 +31,31 @@ void add_page( GtkNotebook* notebook )
         gtk_grid_attach( GTK_GRID( page ), label, 0, row, wide, 1 );
     }
     {
-        GtkWidget* drop_down = gtk_combo_box_text_new_with_entry();
+        GtkWidget* drop_down = gtk_combo_box_text_new();
         gtk_widget_show( drop_down );
 
-        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT( drop_down ),
-                                        "CPU" );
-        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT( drop_down ),
-                                        "Memory" );
-        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT( drop_down ),
-                                        "Custom" );
+        GtkComboBoxText* combo = GTK_COMBO_BOX_TEXT( drop_down );
+        gtk_combo_box_text_append_text( combo, "CPU" );
+        gtk_combo_box_text_append_text( combo, "Memory" );
+        gtk_combo_box_text_append_text( combo, "Custom" );
 
         gtk_combo_box_set_active( GTK_COMBO_BOX( drop_down ), 0 );
         gtk_grid_attach( GTK_GRID( page ), drop_down, wide, row, wide, 1 );
     }
+    ++row;
 
+    {
+        GtkWidget* label = gtk_label_new( "Update interval (ms):" );
+        gtk_widget_show( label );
+        gtk_label_set_xalign( GTK_LABEL( label ), xalign );
+        gtk_widget_set_size_request( label, -1, label_height );
+        gtk_grid_attach( GTK_GRID( page ), label, 0, row, wide, 1 );
+    }
+    {
+        GtkWidget* number = gtk_spin_button_new_with_range( 0, 9999999, 1 );
+        gtk_widget_show( number );
+        gtk_grid_attach( GTK_GRID( page ), number, wide, row, wide, 1 );
+    }
     ++row;
 
     {
@@ -55,20 +66,17 @@ void add_page( GtkNotebook* notebook )
         gtk_grid_attach( GTK_GRID( page ), label, 0, row, wide, 1 );
     }
     {
-        GtkWidget* drop_down = gtk_combo_box_text_new_with_entry();
+        GtkWidget* drop_down = gtk_combo_box_text_new();
         gtk_widget_show( drop_down );
 
-        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT( drop_down ),
-                                        "Normal" );
-        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT( drop_down ),
-                                        "Bars" );
-        gtk_combo_box_text_append_text( GTK_COMBO_BOX_TEXT( drop_down ),
-                                        "LED" );
+        GtkComboBoxText* combo = GTK_COMBO_BOX_TEXT( drop_down );
+        gtk_combo_box_text_append_text( combo, "Normal" );
+        gtk_combo_box_text_append_text( combo, "Bars" );
+        gtk_combo_box_text_append_text( combo, "LED" );
 
         gtk_combo_box_set_active( GTK_COMBO_BOX( drop_down ), 0 );
         gtk_grid_attach( GTK_GRID( page ), drop_down, wide, row, wide, 1 );
     }
-
     ++row;
 
     {
@@ -84,7 +92,6 @@ void add_page( GtkNotebook* notebook )
         gtk_entry_set_placeholder_text( GTK_ENTRY( entry ), "Label" );
         gtk_widget_set_sensitive( entry, FALSE );
     }
-
     ++row;
 
     {
@@ -99,7 +106,6 @@ void add_page( GtkNotebook* notebook )
         gtk_widget_show( color_chooser );
         gtk_grid_attach( GTK_GRID( page ), color_chooser, wide, row, wide, 1 );
     }
-
     ++row;
 
     {
@@ -114,7 +120,6 @@ void add_page( GtkNotebook* notebook )
         gtk_widget_show( color_chooser );
         gtk_grid_attach( GTK_GRID( page ), color_chooser, wide, row, wide, 1 );
     }
-
     ++row;
 
     {
@@ -134,7 +139,6 @@ void add_page( GtkNotebook* notebook )
         gtk_widget_show( number );
         gtk_grid_attach( GTK_GRID( page ), number, wide + narrow, row, narrow, 1 );
     }
-
     ++row;
 
     {
@@ -154,7 +158,6 @@ void add_page( GtkNotebook* notebook )
         gtk_widget_show( number );
         gtk_grid_attach( GTK_GRID( page ), number, wide + narrow, row, narrow, 1 );
     }
-
     ++row;
 
     {
@@ -174,7 +177,13 @@ void add_page( GtkNotebook* notebook )
         gtk_widget_show( number );
         gtk_grid_attach( GTK_GRID( page ), number, wide + narrow, row, narrow, 1 );
     }
+    ++row;
 
+    {
+        GtkWidget* but = gtk_button_new_with_label( "Remove section" );
+        gtk_widget_show( but );
+        gtk_grid_attach( GTK_GRID( page ), but, 0, row, narrow, 1 );
+    }
     ++row;
 }
 
