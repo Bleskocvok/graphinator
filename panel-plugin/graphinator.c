@@ -166,6 +166,13 @@ void entries_init( entries_t* entries, size_t reserved )
 
 void entries_free( entries_t* entries )
 {
+    for ( size_t i = 0; i < entries->count; ++i )
+    {
+        data_free( &entries->ptr[ i ].section->graph.data );
+        collector_t* coll = &entries->ptr[ i ].section->collector;
+        coll->free( coll->ptr );
+    }
+
     free( entries->ptr );
     *entries = (entries_t){ 0 };
 }

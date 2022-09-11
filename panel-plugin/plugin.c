@@ -26,13 +26,6 @@ static void panel_free( XfcePanelPlugin* plugin, gpointer ptr )
     // destroy the encapsulating widget and all children
     gtk_widget_destroy( pan->ebox );
 
-    for ( size_t i = 0; i < pan->entries.count; ++i )
-    {
-        data_free( &pan->entries.ptr[ i ].section->graph.data );
-        collector_t* coll = &pan->entries.ptr[ i ].section->collector;
-        coll->free( coll->ptr );
-    }
-
     entries_free( &pan->entries );
 
     g_slice_free( panel_t, pan );
