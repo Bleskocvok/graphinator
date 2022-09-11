@@ -4,6 +4,24 @@
 #include <stdlib.h>     // NULL
 
 
+void add_entry( GtkButton* self, void* ptr ) {}
+void remove_entry( GtkButton* self, void* ptr ) {}
+
+void set_monitor( GtkButton* self, void* ptr ) {}
+void set_interval( GtkButton* self, void* ptr ) {}
+void set_graph_mode( GtkButton* self, void* ptr ) {}
+void toggle_label( GtkButton* self, void* ptr ) {}
+void set_label( GtkButton* self, void* ptr ) {}
+void set_primary_color( GtkButton* self, void* ptr ) {}
+void set_secondary_color( GtkButton* self, void* ptr ) {}
+void set_graph_w( GtkButton* self, void* ptr ) {}
+void set_graph_h( GtkButton* self, void* ptr ) {}
+void set_graph_blk_w( GtkButton* self, void* ptr ) {}
+void set_graph_blk_h( GtkButton* self, void* ptr ) {}
+void set_graph_pad_w( GtkButton* self, void* ptr ) {}
+void set_graph_pad_h( GtkButton* self, void* ptr ) {}
+
+
 void add_page( GtkNotebook* notebook )
 {
     GtkWidget* page = gtk_grid_new();
@@ -192,8 +210,9 @@ void settings_construct( settings_t* settings, GtkWidget* container )
 {
     GtkWidget* new_but = gtk_button_new_with_label( "Add section" );
     gtk_widget_show( new_but );
-    // gtk_widget_set_size_request( new_but, 128, 20 );
     gtk_container_add( GTK_CONTAINER( container ), new_but );
+
+    g_signal_connect( new_but, "clicked", G_CALLBACK( add_entry ), NULL );
 
     GtkNotebook* notebook = GTK_NOTEBOOK( gtk_notebook_new() );
     settings->notebook = GTK_WIDGET( notebook );
