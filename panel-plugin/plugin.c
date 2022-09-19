@@ -69,6 +69,7 @@ static void plugin_settings_close( GtkWidget* dialog,
     gtk_widget_destroy( dialog );
 
     // free settings_dialog_t
+    settings_free( data->settings );
     free( data->settings );
     free( data );
 }
