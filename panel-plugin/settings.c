@@ -1,7 +1,7 @@
 
 #include "settings.h"
 
-#include <stdlib.h>     // NULL
+#include <stdlib.h>     // NULL, calloc
 
 
 void add_entry( GtkButton* self, void* ptr ) {}
@@ -22,7 +22,7 @@ void set_graph_pad_w( GtkButton* self, void* ptr ) {}
 void set_graph_pad_h( GtkButton* self, void* ptr ) {}
 
 
-void add_page( GtkNotebook* notebook )
+void add_page( GtkNotebook* notebook, page_t* info )
 {
     GtkWidget* page = gtk_grid_new();
     gtk_widget_show( page );
@@ -210,7 +210,15 @@ void add_page( GtkNotebook* notebook )
 }
 
 
-void settings_construct( settings_t* settings, GtkWidget* container )
+void settings_free( settings_t* settings )
+{
+    free( settings->pages );
+}
+
+
+void settings_construct( settings_t* settings,
+                         GtkWidget* container,
+                         entries_t* entries )
 {
     GtkWidget* new_but = gtk_button_new_with_label( "Add section" );
     gtk_widget_show( new_but );
@@ -224,31 +232,16 @@ void settings_construct( settings_t* settings, GtkWidget* container )
     gtk_widget_show( settings->notebook );
     gtk_container_add( GTK_CONTAINER( container ), settings->notebook );
 
-    add_page( notebook );
-    add_page( notebook );
+    settings->entries = entries;
+    settings->pages_count = entries->count;
+    settings->pages = calloc( entries->count, sizeof( page_t ) );
 
-    // {
-    //     GtkWidget* page = gtk_grid_new();
-    //     gtk_widget_show( page );
+    for ( size_t i = 0; i < entries->count; i++ )
+    {
+        settings->pages[ i ].entry = &settings->entries->ptr[ i ];
+        add_page( notebook, &settings->pages[ i ] );
+    }
 
-    //     GtkWidget* but = gtk_button_new_with_label( "hello there" );
-    //     gtk_widget_show( but );
-    //     gtk_grid_attach( GTK_GRID( page ), but, 0, 0, 1, 1 );
-
-    //     GtkWidget* color_chooser = gtk_color_button_new();
-    //     gtk_widget_show( color_chooser );
-    //     gtk_grid_attach( GTK_GRID( page ), color_chooser, 5, 1, 1, 1 );
-
-    //     int idx = gtk_notebook_append_page( notebook, page, NULL );
-    //     (void) idx;
-    //     gtk_notebook_set_tab_reorderable( notebook, page, TRUE );
-    // }
-
-    // {
-    //     GtkWidget* lab = gtk_label_new( "label" );
-    //     gtk_widget_show( lab );
-
-    //     gtk_notebook_append_page( notebook, lab, NULL );
-    //     gtk_notebook_set_tab_reorderable( notebook, lab, TRUE );
-    // }
+    // if ( entries->count > 0 )
+        gtk_notebook_set_current_page( notebook, 0 );
 }

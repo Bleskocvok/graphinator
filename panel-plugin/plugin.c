@@ -52,13 +52,25 @@ static void orientation_changed( XfcePanelPlugin* plugin,
 }
 
 
+typedef struct
+{
+    settings_t* settings;       //     (owning ptr)
+    XfcePanelPlugin* plugin;    // (non-owning ptr)
+
+} settings_dialog_t;
+
+
 static void plugin_settings_close( GtkWidget* dialog,
                                    gint response,
-                                   XfcePanelPlugin* plugin )
+                                   settings_dialog_t* data )
 {
-    g_object_set_data( G_OBJECT( plugin ), "dialog", NULL );
-    xfce_panel_plugin_unblock_menu( plugin );
+    g_object_set_data( G_OBJECT( data->plugin ), "dialog", NULL );
+    xfce_panel_plugin_unblock_menu( data->plugin );
     gtk_widget_destroy( dialog );
+
+    // free settings_dialog_t
+    free( data->settings );
+    free( data );
 }
 
 
@@ -66,6 +78,12 @@ static void plugin_settings( XfcePanelPlugin* plugin, panel_t* pan )
 {
     GtkWindow* parent;
     GtkWidget* dia;
+    settings_dialog_t* data;
+
+    // init settings_dialog_t
+    data = calloc( 1, sizeof( settings_dialog_t ) );
+    data->settings = calloc( 1, sizeof( settings_t ) );
+    data->plugin = plugin;
 
     xfce_panel_plugin_block_menu( plugin );
 
@@ -82,7 +100,7 @@ static void plugin_settings( XfcePanelPlugin* plugin, panel_t* pan )
 
     g_signal_connect( G_OBJECT( dia ), "response",
                                        G_CALLBACK( plugin_settings_close ),
-                                       plugin );
+                                       data );
 
     gtk_window_set_default_size( GTK_WINDOW( dia ), 300, 300 );
     gtk_widget_show( dia );
@@ -93,8 +111,7 @@ static void plugin_settings( XfcePanelPlugin* plugin, panel_t* pan )
     gtk_box_pack_start( GTK_BOX( content ), box, FALSE, FALSE, 0 );
     gtk_container_set_border_width( GTK_CONTAINER( content ), 10 );
 
-    settings_t settings = { 0 };
-    settings_construct( &settings, box );
+    settings_construct( data->settings, box, &pan->entries );
 }
 
 
@@ -129,6 +146,8 @@ static void plugin_construct( XfcePanelPlugin* plugin )
     panel_t* pan = plugin_construct_in_container( GTK_CONTAINER( plugin ),
                                                   orient );
 
+    add_sections( pan, default_sections, default_sections_count );
+
     g_signal_connect( G_OBJECT( plugin ), "free-data",
                       G_CALLBACK( panel_free ), pan );
 
@@ -141,8 +160,5 @@ static void plugin_construct( XfcePanelPlugin* plugin )
 
     xfce_panel_plugin_menu_show_configure( plugin );
     g_signal_connect( G_OBJECT( plugin ), "configure-plugin",
-                                          G_CALLBACK( plugin_settings ), NULL );
-
-    // add_sections( pan );
-    add_sections( pan, default_sections, default_sections_count );
+                                          G_CALLBACK( plugin_settings ), pan );
 }
