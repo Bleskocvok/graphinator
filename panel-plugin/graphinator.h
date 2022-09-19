@@ -90,7 +90,17 @@ void entries_add( entries_t* entries, panel_t* pan, section_t* sec );
 panel_t* plugin_construct_in_container( GtkContainer* container,
                                         GtkOrientation orient );
 
-void add_sections( panel_t* );
+void add_sections( panel_t* pan, section_t* sections, size_t count );
+
+
+void* init_cpu_data( void );
+void free_cpu_data( void* ptr );
+double collect_cpu_data( void* ptr );
+
+
+void* init_mem_data( void );
+void free_mem_data( void* ptr );
+double collect_mem_data( void* ptr );
 
 
 G_END_DECLS

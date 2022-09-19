@@ -1,6 +1,7 @@
 
 #include "plugin.h"
 
+#include "defaults.h"
 #include "graphinator.h"    // plugin_construct_in_container, panel_t
 #include "settings.h"       // settings_construct
 
@@ -142,5 +143,6 @@ static void plugin_construct( XfcePanelPlugin* plugin )
     g_signal_connect( G_OBJECT( plugin ), "configure-plugin",
                                           G_CALLBACK( plugin_settings ), NULL );
 
-    add_sections( pan );
+    // add_sections( pan );
+    add_sections( pan, default_sections, default_sections_count );
 }

@@ -13,52 +13,42 @@
 #include <stdio.h>          // snprintf
 
 
-static void* init_cpu_data( void );
-static void free_cpu_data( void* ptr );
-static double collect_cpu_data( void* ptr );
+// static section_t section =
+// {
+//     .collector = (collector_t){ .collect = collect_cpu_data,
+//                                 .init = init_cpu_data,
+//                                 .free = free_cpu_data,       },
+
+//     .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
+//                         .pad_x =  1, .pad_y =  1,
+//                         .h     = 28, .w     = 33,
+//                         .rgb_on  = MK_RGB( 255, 128, 128 ),
+//                         .rgb_off = MK_RGB( 102, 102, 102 ),
+//                         .max_value = 100,                    },
+
+//     .draw_func = draw_lin,
+//     .interval = 750,
+//     .label_fmt = " cpu\n%3.0f%% ",
+// };
 
 
-static void* init_mem_data( void );
-static void free_mem_data( void* ptr );
-static double collect_mem_data( void* ptr );
+// static section_t sec_mem =
+// {
+//     .collector = (collector_t){ .collect = collect_mem_data,
+//                                 .init = init_mem_data,
+//                                 .free = free_mem_data,       },
 
+//     .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
+//                         .pad_x =  1, .pad_y =  1,
+//                         .h     = 28, .w     = 33,
+//                         .rgb_on  = MK_RGB( 221, 187,  51 ),
+//                         .rgb_off = MK_RGB( 102, 102, 102 ),
+//                         .max_value = 100,                    },
 
-static section_t section =
-{
-    .collector = (collector_t){ .collect = collect_cpu_data,
-                                .init = init_cpu_data,
-                                .free = free_cpu_data,       },
-
-    .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
-                        .pad_x =  1, .pad_y =  1,
-                        .h     = 28, .w     = 33,
-                        .rgb_on  = MK_RGB( 255, 128, 128 ),
-                        .rgb_off = MK_RGB( 102, 102, 102 ),
-                        .max_value = 100,                    },
-
-    .draw_func = draw_lin,
-    .interval = 750,
-    .label_fmt = " cpu\n%3.0f%% ",
-};
-
-
-static section_t sec_mem =
-{
-    .collector = (collector_t){ .collect = collect_mem_data,
-                                .init = init_mem_data,
-                                .free = free_mem_data,       },
-
-    .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
-                        .pad_x =  1, .pad_y =  1,
-                        .h     = 28, .w     = 33,
-                        .rgb_on  = MK_RGB( 221, 187,  51 ),
-                        .rgb_off = MK_RGB( 102, 102, 102 ),
-                        .max_value = 100,                    },
-
-    .draw_func = draw_lin,
-    .interval = 750,
-    .label_fmt = " mem\n%3.0f%% ",
-};
+//     .draw_func = draw_lin,
+//     .interval = 750,
+//     .label_fmt = " mem\n%3.0f%% ",
+// };
 
 
 static gboolean collector( gpointer ptr )
@@ -93,19 +83,19 @@ static gboolean collector( gpointer ptr )
 }
 
 
-static void* init_mem_data( void )
+void* init_mem_data( void )
 {
     return NULL;
 }
 
 
-static void free_mem_data( void* ptr )
+void free_mem_data( void* ptr )
 {
     (void) ptr;
 }
 
 
-static double collect_mem_data( void* ptr )
+double collect_mem_data( void* ptr )
 {
     (void) ptr;
 
@@ -117,7 +107,7 @@ static double collect_mem_data( void* ptr )
 }
 
 
-static void* init_cpu_data( void )
+void* init_cpu_data( void )
 {
     proc_stat_t* ptr = calloc( 1, sizeof( proc_stat_t ) );
     if ( !ptr )
@@ -128,13 +118,13 @@ static void* init_cpu_data( void )
 }
 
 
-static void free_cpu_data( void* ptr )
+void free_cpu_data( void* ptr )
 {
     free( ptr );
 }
 
 
-static double collect_cpu_data( void* ptr )
+double collect_cpu_data( void* ptr )
 {
     proc_stat_t* prev_stat = ptr;
 
@@ -221,17 +211,26 @@ void entries_add( entries_t* entries, panel_t* pan, section_t* sec )
 }
 
 
-void add_sections( panel_t* pan )
+void add_sections( panel_t* pan, section_t* sections, size_t count )
 {
-    data_init( &section.graph.data, graph_cols( &section.graph ) );
-    section.collector.ptr = section.collector.init();
+    entries_init( &pan->entries, count );
 
-    data_init( &sec_mem.graph.data, graph_cols( &sec_mem.graph ) );
-    sec_mem.collector.ptr = sec_mem.collector.init();
+    // data_init( &section.graph.data, graph_cols( &section.graph ) );
+    // section.collector.ptr = section.collector.init();
 
-    entries_init( &pan->entries, 10 );
-    entries_add( &pan->entries, pan, &section );
-    entries_add( &pan->entries, pan, &sec_mem );
+    // data_init( &sec_mem.graph.data, graph_cols( &sec_mem.graph ) );
+    // sec_mem.collector.ptr = sec_mem.collector.init();
+
+    // entries_add( &pan->entries, pan, &section );
+    // entries_add( &pan->entries, pan, &sec_mem );
+
+    for ( size_t i = 0; i < count; i++ )
+    {
+        section_t* sec = sections + i;
+        data_init( &sec->graph.data, graph_cols( &sec->graph ) );
+        sec->collector.ptr = sec->collector.init();
+        entries_add( &pan->entries, pan, sec );
+    }
 }
 
 

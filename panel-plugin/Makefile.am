@@ -11,7 +11,6 @@ plugin_LTLIBRARIES =        \
 plugindir =                 \
 	$(libdir)/xfce4/panel/plugins
 
-
 libgraphinator_la_SOURCES = \
 	cpu_info.c              \
 	data.c                  \
@@ -19,7 +18,8 @@ libgraphinator_la_SOURCES = \
 	drawing.c               \
 	graphinator.c           \
 	plugin.c                \
-	settings.c              
+	settings.c              \
+	defaults.c              
 
 libgraphinator_la_CFLAGS =  \
 	-std=c11 -Wall -Wextra  \

@@ -7,9 +7,9 @@
 void add_entry( GtkButton* self, void* ptr ) {}
 void remove_entry( GtkButton* self, void* ptr ) {}
 
-void set_monitor( GtkButton* self, void* ptr ) {}
+void set_monitor( GtkComboBox* self, void* ptr ) {}
 void set_interval( GtkButton* self, void* ptr ) {}
-void set_graph_mode( GtkButton* self, void* ptr ) {}
+void set_graph_mode( GtkComboBox* self, void* ptr ) {}
 void toggle_label( GtkButton* self, void* ptr ) {}
 void set_label( GtkButton* self, void* ptr ) {}
 void set_primary_color( GtkButton* self, void* ptr ) {}
@@ -59,6 +59,8 @@ void add_page( GtkNotebook* notebook )
 
         gtk_combo_box_set_active( GTK_COMBO_BOX( drop_down ), 0 );
         gtk_grid_attach( GTK_GRID( page ), drop_down, wide, row, wide, 1 );
+
+        g_signal_connect( combo, "changed", G_CALLBACK( set_monitor ), NULL );
     }
     ++row;
 
@@ -94,6 +96,8 @@ void add_page( GtkNotebook* notebook )
 
         gtk_combo_box_set_active( GTK_COMBO_BOX( drop_down ), 0 );
         gtk_grid_attach( GTK_GRID( page ), drop_down, wide, row, wide, 1 );
+
+        g_signal_connect( combo, "changed", G_CALLBACK( set_graph_mode ), NULL );
     }
     ++row;
 
