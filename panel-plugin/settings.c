@@ -5,10 +5,12 @@
 
 
 //
-// forward declarations for callbacks
+// Forward declarations
 //
-void add_entry(             GtkButton*      self,   void*   ptr   ) {}
-void remove_entry(          GtkButton*      self,   void*   ptr   ) {}
+
+// Callbacks
+void add_entry(             GtkButton*      self,   void*   ptr   );
+void remove_entry(          GtkButton*      self,   void*   ptr   );
 void set_monitor(           GtkComboBox*    self,   page_t* ptr   );
 void set_interval(          GtkButton*      self,   page_t* ptr   );
 void set_graph_mode(        GtkComboBox*    self,   page_t* ptr   );
@@ -20,26 +22,23 @@ void set_graph_w(           GtkSpinButton*  self,   page_t* ptr   );
 void set_graph_h(           GtkSpinButton*  self,   page_t* ptr   );
 void set_graph_blk_w(       GtkSpinButton*  self,   page_t* ptr   );
 void set_graph_blk_h(       GtkSpinButton*  self,   page_t* ptr   );
-void set_graph_pad_w(       GtkSpinButton*  self,   page_t* ptr   );
-void set_graph_pad_h(       GtkSpinButton*  self,   page_t* ptr   );
+void set_graph_pad_x(       GtkSpinButton*  self,   page_t* ptr   );
+void set_graph_pad_y(       GtkSpinButton*  self,   page_t* ptr   );
+
+// Main
+void add_page( GtkNotebook* notebook, page_t* ctx );
+void settings_free( settings_t* settings );
+void settings_construct( settings_t* settings,
+                         GtkWidget* container,
+                         entries_t* entries );
 
 
-void set_monitor(           GtkComboBox*    self,   page_t* ptr   ) {}
-void set_interval(          GtkButton*      self,   page_t* ptr   ) {}
-void set_graph_mode(        GtkComboBox*    self,   page_t* ptr   ) {}
-void toggle_label(          GtkCheckButton* self,   page_t* ptr   ) {}
-void set_label(             GtkEntry*       self,   page_t* ptr   ) {}
-void set_primary_color(     GtkColorButton* self,   page_t* ptr   ) {}
-void set_secondary_color(   GtkColorButton* self,   page_t* ptr   ) {}
-void set_graph_w(           GtkSpinButton*  self,   page_t* ptr   ) {}
-void set_graph_h(           GtkSpinButton*  self,   page_t* ptr   ) {}
-void set_graph_blk_w(       GtkSpinButton*  self,   page_t* ptr   ) {}
-void set_graph_blk_h(       GtkSpinButton*  self,   page_t* ptr   ) {}
-void set_graph_pad_w(       GtkSpinButton*  self,   page_t* ptr   ) {}
-void set_graph_pad_h(       GtkSpinButton*  self,   page_t* ptr   ) {}
+//
+// Definitions
+//
 
 
-void add_page( GtkNotebook* notebook, page_t* info )
+void add_page( GtkNotebook* notebook, page_t* ctx )
 {
     GtkWidget* page = gtk_grid_new();
     gtk_widget_show( page );
@@ -77,7 +76,7 @@ void add_page( GtkNotebook* notebook, page_t* info )
         gtk_combo_box_set_active( GTK_COMBO_BOX( drop_down ), 0 );
         gtk_grid_attach( GTK_GRID( page ), drop_down, wide, row, wide, 1 );
 
-        g_signal_connect( combo, "changed", G_CALLBACK( set_monitor ), NULL );
+        g_signal_connect( combo, "changed", G_CALLBACK( set_monitor ), ctx );
     }
     ++row;
 
@@ -92,6 +91,10 @@ void add_page( GtkNotebook* notebook, page_t* info )
         GtkWidget* number = gtk_spin_button_new_with_range( 0, 9999999, 1 );
         gtk_widget_show( number );
         gtk_grid_attach( GTK_GRID( page ), number, wide, row, wide, 1 );
+
+        g_signal_connect( number, "value-changed",
+                                  G_CALLBACK( set_interval ),
+                                  ctx );
     }
     ++row;
 
@@ -114,7 +117,7 @@ void add_page( GtkNotebook* notebook, page_t* info )
         gtk_combo_box_set_active( GTK_COMBO_BOX( drop_down ), 0 );
         gtk_grid_attach( GTK_GRID( page ), drop_down, wide, row, wide, 1 );
 
-        g_signal_connect( combo, "changed", G_CALLBACK( set_graph_mode ), NULL );
+        g_signal_connect( combo, "changed", G_CALLBACK( set_graph_mode ), ctx );
     }
     ++row;
 
@@ -143,11 +146,14 @@ void add_page( GtkNotebook* notebook, page_t* info )
         gtk_grid_attach( GTK_GRID( page ), label, 0, row, wide, 1 );
     }
     {
-        GtkWidget* color_chooser = gtk_color_button_new();
+        GdkRGBA rgba = { .red = 0.0, .green = 0.0, .blue = 0.0, .alpha = 1.0 };
+        GtkWidget* color_chooser = gtk_color_button_new_with_rgba( &rgba );
         gtk_widget_show( color_chooser );
         gtk_grid_attach( GTK_GRID( page ), color_chooser, wide, row, wide, 1 );
 
-        // g_signal_connect(  );
+        g_signal_connect( color_chooser, "color-set",
+                                         G_CALLBACK( set_primary_color ),
+                                         ctx );
     }
     ++row;
 
@@ -159,11 +165,14 @@ void add_page( GtkNotebook* notebook, page_t* info )
         gtk_grid_attach( GTK_GRID( page ), label, 0, row, wide, 1 );
     }
     {
-        GtkWidget* color_chooser = gtk_color_button_new();
+        GdkRGBA rgba = { .red = 1.0, .green = 0.0, .blue = 1.0, .alpha = 1.0 };
+        GtkWidget* color_chooser = gtk_color_button_new_with_rgba( &rgba );
         gtk_widget_show( color_chooser );
         gtk_grid_attach( GTK_GRID( page ), color_chooser, wide, row, wide, 1 );
 
-        // g_signal_connect(  );
+        g_signal_connect( color_chooser, "color-set",
+                                         G_CALLBACK( set_secondary_color ),
+                                         ctx );
     }
     ++row;
 
@@ -179,14 +188,18 @@ void add_page( GtkNotebook* notebook, page_t* info )
         gtk_widget_show( number );
         gtk_grid_attach( GTK_GRID( page ), number, wide, row, narrow, 1 );
 
-        // g_signal_connect(  );
+        g_signal_connect( number, "value-changed",
+                                  G_CALLBACK( set_graph_w ),
+                                  ctx );
     }
     {
         GtkWidget* number = gtk_spin_button_new_with_range( 0, 9999, 1 );
         gtk_widget_show( number );
         gtk_grid_attach( GTK_GRID( page ), number, wide + narrow, row, narrow, 1 );
 
-        // g_signal_connect(  );
+        g_signal_connect( number, "value-changed",
+                                  G_CALLBACK( set_graph_h ),
+                                  ctx );
     }
     ++row;
 
@@ -202,14 +215,18 @@ void add_page( GtkNotebook* notebook, page_t* info )
         gtk_widget_show( number );
         gtk_grid_attach( GTK_GRID( page ), number, wide, row, narrow, 1 );
 
-        // g_signal_connect(  );
+        g_signal_connect( number, "value-changed",
+                                  G_CALLBACK( set_graph_blk_w ),
+                                  ctx );
     }
     {
         GtkWidget* number = gtk_spin_button_new_with_range( 0, 9999, 1 );
         gtk_widget_show( number );
         gtk_grid_attach( GTK_GRID( page ), number, wide + narrow, row, narrow, 1 );
 
-        // g_signal_connect(  );
+        g_signal_connect( number, "value-changed",
+                                  G_CALLBACK( set_graph_blk_h ),
+                                  ctx );
     }
     ++row;
 
@@ -225,14 +242,18 @@ void add_page( GtkNotebook* notebook, page_t* info )
         gtk_widget_show( number );
         gtk_grid_attach( GTK_GRID( page ), number, wide, row, narrow, 1 );
 
-        // g_signal_connect(  );
+        g_signal_connect( number, "value-changed",
+                                  G_CALLBACK( set_graph_pad_x ),
+                                  ctx );
     }
     {
         GtkWidget* number = gtk_spin_button_new_with_range( 0, 9999, 1 );
         gtk_widget_show( number );
         gtk_grid_attach( GTK_GRID( page ), number, wide + narrow, row, narrow, 1 );
 
-        // g_signal_connect(  );
+        g_signal_connect( number, "value-changed",
+                                  G_CALLBACK( set_graph_pad_y ),
+                                  ctx );
     }
     ++row;
 
@@ -283,3 +304,78 @@ void settings_construct( settings_t* settings,
     // if ( entries->count > 0 )
         gtk_notebook_set_current_page( notebook, 0 );
 }
+
+
+void add_entry( GtkButton* self, void* ptr ) {}
+void remove_entry( GtkButton* self, void* ptr ) {}
+void set_monitor( GtkComboBox* self, page_t* ptr ) {}
+void set_interval( GtkButton* self, page_t* ptr ) {}
+void set_graph_mode( GtkComboBox* self, page_t* ptr ) {}
+void toggle_label( GtkCheckButton* self, page_t* ptr ) {}
+void set_label( GtkEntry* self, page_t* ptr ) {}
+
+
+static void rgba_to_array( GdkRGBA* rgba, double* out )
+{
+    out[ 0 ] = rgba->red;
+    out[ 1 ] = rgba->green;
+    out[ 2 ] = rgba->blue;
+    // TODO: add alpha
+}
+
+void set_primary_color( GtkColorButton* self, page_t* ptr )
+{
+    GdkRGBA rgba = { 0 };
+    gtk_color_chooser_get_rgba( GTK_COLOR_CHOOSER( self ), &rgba );
+    rgba_to_array( &rgba, ptr->entry->section->graph.rgb_on );
+}
+
+void set_secondary_color( GtkColorButton* self, page_t* ptr )
+{
+    GdkRGBA rgba = { 0 };
+    gtk_color_chooser_get_rgba( GTK_COLOR_CHOOSER( self ), &rgba );
+    rgba_to_array( &rgba, ptr->entry->section->graph.rgb_off );
+}
+
+
+static void read_int_to( GtkSpinButton* in, int* out )
+{
+    *out = gtk_spin_button_get_value_as_int( in );
+}
+
+void set_graph_w( GtkSpinButton* self, page_t* ptr )
+{
+    read_int_to( self, &ptr->entry->section->graph.w );
+    entry_refresh( ptr->entry );
+}
+
+void set_graph_h( GtkSpinButton* self, page_t* ptr )
+{
+    read_int_to( self, &ptr->entry->section->graph.h );
+    entry_refresh( ptr->entry );
+}
+
+void set_graph_blk_w( GtkSpinButton* self, page_t* ptr )
+{
+    read_int_to( self, &ptr->entry->section->graph.blk_w );
+    entry_refresh( ptr->entry );
+}
+
+void set_graph_blk_h( GtkSpinButton* self, page_t* ptr )
+{
+    read_int_to( self, &ptr->entry->section->graph.blk_h );
+    entry_refresh( ptr->entry );
+}
+
+void set_graph_pad_x( GtkSpinButton* self, page_t* ptr )
+{
+    read_int_to( self, &ptr->entry->section->graph.pad_x );
+    entry_refresh( ptr->entry );
+}
+
+void set_graph_pad_y( GtkSpinButton* self, page_t* ptr )
+{
+    read_int_to( self, &ptr->entry->section->graph.pad_y );
+    entry_refresh( ptr->entry );
+}
+

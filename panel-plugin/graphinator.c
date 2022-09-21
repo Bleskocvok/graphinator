@@ -51,6 +51,13 @@
 // };
 
 
+void entry_refresh( panel_entry_t* entry )
+{
+    gtk_widget_set_size_request( entry->draw_area, entry->section->graph.w,
+                                                   entry->section->graph.h );
+}
+
+
 static gboolean collector( gpointer ptr )
 {
     panel_entry_t* ent = ptr;

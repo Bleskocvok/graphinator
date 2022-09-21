@@ -82,6 +82,8 @@ typedef struct
 } panel_t;
 
 
+void entry_refresh( panel_entry_t* entry );
+
 void entries_init( entries_t* entries, size_t reserved );
 void entries_free( entries_t* entries );
 void entries_add( entries_t* entries, panel_t* pan, section_t* sec );
