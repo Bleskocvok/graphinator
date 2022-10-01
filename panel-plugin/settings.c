@@ -4,6 +4,10 @@
 #include <stdlib.h>     // NULL, calloc
 
 
+
+static const char* MONITORS[] = { "CPU", "Memory", "Custom" };
+
+
 //
 // Forward declarations
 //
@@ -111,7 +115,7 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
         GtkComboBoxText* combo = GTK_COMBO_BOX_TEXT( drop_down );
         gtk_combo_box_text_append_text( combo, "Normal" );
-        gtk_combo_box_text_append_text( combo, "Bars" );
+        // gtk_combo_box_text_append_text( combo, "Bars" );
         gtk_combo_box_text_append_text( combo, "LED" );
 
         gtk_combo_box_set_active( GTK_COMBO_BOX( drop_down ), 0 );
@@ -308,9 +312,31 @@ void settings_construct( settings_t* settings,
 
 void add_entry( GtkButton* self, void* ptr ) {}
 void remove_entry( GtkButton* self, void* ptr ) {}
-void set_monitor( GtkComboBox* self, page_t* ptr ) {}
+
+void set_monitor( GtkComboBox* self, page_t* ptr )
+{
+    int active = gtk_combo_box_get_active( self );
+
+    switch ( active )
+    {
+        // case 0: ptr->entry->section->collector = 
+        default: return;
+    }
+}
+
 void set_interval( GtkButton* self, page_t* ptr ) {}
-void set_graph_mode( GtkComboBox* self, page_t* ptr ) {}
+
+#include <sys/syslog.h>
+void set_graph_mode( GtkComboBox* self, page_t* ptr )
+{
+    switch ( gtk_combo_box_get_active( self ) )
+    {
+        case 0: ptr->entry->section->draw_func = &draw_lin; syslog(LOG_DEBUG, "set_graph_mode.lin"); break;
+        case 1: ptr->entry->section->draw_func = &draw_led; syslog(LOG_DEBUG, "set_graph_mode.led"); break;
+        default: return;
+    }
+}
+
 void toggle_label( GtkCheckButton* self, page_t* ptr ) {}
 void set_label( GtkEntry* self, page_t* ptr ) {}
 

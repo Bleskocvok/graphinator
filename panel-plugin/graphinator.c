@@ -52,6 +52,13 @@ static gboolean collector( gpointer ptr )
 }
 
 
+// trampoline
+void redraw( GtkWidget* widget, cairo_t* cr, section_t* sec )
+{
+    sec->draw_func( widget, cr, &sec->graph );
+}
+
+
 void* init_mem_data( void )
 {
     return NULL;
@@ -176,7 +183,7 @@ void entries_add( entries_t* entries, panel_t* pan, section_t* sec )
     gtk_box_pack_start( GTK_BOX( pan->wrap ), entry->draw_area,
                                               FALSE, FALSE, 0 );
     g_signal_connect( G_OBJECT( entry->draw_area ), "draw",
-                      G_CALLBACK( entry->section->draw_func ), &sec->graph );
+                      G_CALLBACK( redraw ), sec );
 }
 
 
