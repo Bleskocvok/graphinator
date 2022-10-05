@@ -16,7 +16,7 @@ static const char* MONITORS[] = { "CPU", "Memory", "Custom" };
 void add_entry(             GtkButton*      self,   void*   ptr   );
 void remove_entry(          GtkButton*      self,   void*   ptr   );
 void set_monitor(           GtkComboBox*    self,   page_t* ptr   );
-void set_interval(          GtkButton*      self,   page_t* ptr   );
+void set_interval(          GtkSpinButton*  self,   page_t* ptr   );
 void set_graph_mode(        GtkComboBox*    self,   page_t* ptr   );
 void toggle_label(          GtkCheckButton* self,   page_t* ptr   );
 void set_label(             GtkEntry*       self,   page_t* ptr   );
@@ -35,6 +35,15 @@ void settings_free( settings_t* settings );
 void settings_construct( settings_t* settings,
                          GtkWidget* container,
                          entries_t* entries );
+
+
+//
+// Utility functions
+//
+static int read_spin( GtkSpinButton* in )
+{
+    return gtk_spin_button_get_value_as_int( in );
+}
 
 
 //
@@ -324,7 +333,13 @@ void set_monitor( GtkComboBox* self, page_t* ptr )
     }
 }
 
-void set_interval( GtkButton* self, page_t* ptr ) {}
+
+void set_interval( GtkSpinButton* self, page_t* ptr )
+{
+    int ms = read_spin( self );
+    if ( ms > 0 )
+        entry_set_interval( ptr->entry, ms );
+}
 
 
 void set_graph_mode( GtkComboBox* self, page_t* ptr )
@@ -364,44 +379,39 @@ void set_secondary_color( GtkColorButton* self, page_t* ptr )
 }
 
 
-static void read_int_to( GtkSpinButton* in, int* out )
-{
-    *out = gtk_spin_button_get_value_as_int( in );
-}
-
 void set_graph_w( GtkSpinButton* self, page_t* ptr )
 {
-    read_int_to( self, &ptr->entry->section->graph.w );
+    ptr->entry->section->graph.w = read_spin( self );
     entry_refresh( ptr->entry );
 }
 
 void set_graph_h( GtkSpinButton* self, page_t* ptr )
 {
-    read_int_to( self, &ptr->entry->section->graph.h );
+    ptr->entry->section->graph.h = read_spin( self );
     entry_refresh( ptr->entry );
 }
 
 void set_graph_blk_w( GtkSpinButton* self, page_t* ptr )
 {
-    read_int_to( self, &ptr->entry->section->graph.blk_w );
+    ptr->entry->section->graph.blk_w = read_spin( self );
     entry_refresh( ptr->entry );
 }
 
 void set_graph_blk_h( GtkSpinButton* self, page_t* ptr )
 {
-    read_int_to( self, &ptr->entry->section->graph.blk_h );
+    ptr->entry->section->graph.blk_h = read_spin( self );
     entry_refresh( ptr->entry );
 }
 
 void set_graph_pad_x( GtkSpinButton* self, page_t* ptr )
 {
-    read_int_to( self, &ptr->entry->section->graph.pad_x );
+    ptr->entry->section->graph.pad_x = read_spin( self );
     entry_refresh( ptr->entry );
 }
 
 void set_graph_pad_y( GtkSpinButton* self, page_t* ptr )
 {
-    read_int_to( self, &ptr->entry->section->graph.pad_y );
+    ptr->entry->section->graph.pad_y = read_spin( self );
     entry_refresh( ptr->entry );
 }
 

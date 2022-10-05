@@ -13,6 +13,17 @@ void entry_refresh( panel_entry_t* entry )
 }
 
 
+void entry_set_interval( panel_entry_t* entry, int new_ms )
+{
+    // remove old timer
+    g_source_remove( entry->timer );
+
+    // add new timer
+    entry->section->interval = new_ms;
+    entry->timer = g_timeout_add( new_ms, G_SOURCE_FUNC( collector ), entry );
+}
+
+
 void entries_init( entries_t* entries, size_t reserved )
 {
     *entries = (entries_t){ 0 };
@@ -62,7 +73,8 @@ void entries_add( entries_t* entries, GtkBox* box, section_t* sec )
     }
 
     // setup interval
-    g_timeout_add( sec->interval, G_SOURCE_FUNC( collector ), entry );
+    entry->timer = g_timeout_add( sec->interval, G_SOURCE_FUNC( collector ),
+                                                 entry );
 
     // setup draw area
     entry->draw_area = gtk_drawing_area_new();

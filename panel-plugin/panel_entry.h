@@ -32,6 +32,8 @@ typedef struct
     GtkWidget* draw_area;
     GtkWidget* label;
 
+    unsigned timer;
+
 } panel_entry_t;
 
 
@@ -45,6 +47,7 @@ typedef struct
 
 
 void entry_refresh( panel_entry_t* entry );
+void entry_set_interval( panel_entry_t* entry, int new_ms );
 
 void entries_init( entries_t* entries, size_t reserved );
 void entries_free( entries_t* entries );
