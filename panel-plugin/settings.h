@@ -35,5 +35,7 @@ void settings_construct( settings_t* settings,
                          GtkWidget* container,
                          entries_t* entries );
 
+void settings_free( settings_t* settings );
+
 
 #endif // __SETTINGS_H__
