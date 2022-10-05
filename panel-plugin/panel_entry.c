@@ -37,8 +37,7 @@ void entries_free( entries_t* entries )
     for ( size_t i = 0; i < entries->count; ++i )
     {
         data_free( &entries->ptr[ i ].section->graph.data );
-        collector_t* coll = &entries->ptr[ i ].section->collector;
-        coll->free( coll->ptr );
+        collector_free( &entries->ptr[ i ].section->collector );
     }
 
     free( entries->ptr );
@@ -91,8 +90,8 @@ static gboolean collector( gpointer ptr )
 {
     panel_entry_t* ent = ptr;
 
-    double val = ent->section->collector.collect( ent->section->collector.ptr );
-    
+    double val = collector_collect( &ent->section->collector );
+
     data_push( &ent->section->graph.data, val );
 
     gtk_widget_queue_draw_area( ent->draw_area, 0, 0, ent->section->graph.w,

@@ -314,8 +314,7 @@ void settings_construct( settings_t* settings,
         add_page( notebook, &settings->pages[ i ] );
     }
 
-    // if ( entries->count > 0 )
-        gtk_notebook_set_current_page( notebook, 0 );
+    gtk_notebook_set_current_page( notebook, 0 );
 }
 
 
@@ -328,7 +327,16 @@ void set_monitor( GtkComboBox* self, page_t* ptr )
 
     switch ( active )
     {
-        // case 0: ptr->entry->section->collector = 
+        case 0:
+            collector_reset( &ptr->entry->section->collector, init_cpu_data,
+                                                              collect_cpu_data,
+                                                              free_cpu_data );
+            break;
+        case 1:
+            collector_reset( &ptr->entry->section->collector, init_mem_data,
+                                                              collect_mem_data,
+                                                              free_mem_data );
+            break;
         default: return;
     }
 }

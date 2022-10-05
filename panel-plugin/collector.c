@@ -7,6 +7,43 @@
 #include <stdlib.h>         // NULL
 
 
+void collector_init( collector_t* collector )
+{
+    if ( collector->init )
+        collector->ptr = collector->init();
+}
+
+
+void collector_reset( collector_t* collector, init_func_t init,
+                      collect_func_t collect, free_func_t free )
+{
+    if ( collector->ptr )
+        collector_free( collector );
+
+    collector->init = init;
+    collector->collect = collect;
+    collector->free = free;
+
+    collector_init( collector );
+}
+
+
+void collector_free( collector_t* collector )
+{
+    if ( collector->free )
+    {
+        collector->free( collector->ptr );
+        collector->ptr = NULL;
+    }
+}
+
+
+double collector_collect( collector_t* collector )
+{
+    return collector->collect( collector->ptr );
+}
+
+
 void* init_mem_data( void )
 {
     return NULL;

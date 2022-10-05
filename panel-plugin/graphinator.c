@@ -17,21 +17,12 @@ void add_sections( panel_t* pan, section_t* sections, size_t count )
 {
     entries_init( &pan->entries, count );
 
-    // data_init( &section.graph.data, graph_cols( &section.graph ) );
-    // section.collector.ptr = section.collector.init();
-
-    // data_init( &sec_mem.graph.data, graph_cols( &sec_mem.graph ) );
-    // sec_mem.collector.ptr = sec_mem.collector.init();
-
-    // entries_add( &pan->entries, pan, &section );
-    // entries_add( &pan->entries, pan, &sec_mem );
-
     for ( size_t i = 0; i < count; i++ )
     {
         section_t* sec = sections + i;
 
         data_init( &sec->graph.data, graph_cols( &sec->graph ) );
-        sec->collector.ptr = sec->collector.init();
+        collector_init( &sec->collector );
 
         entries_add( &pan->entries, GTK_BOX( pan->wrap ), sec );
     }
