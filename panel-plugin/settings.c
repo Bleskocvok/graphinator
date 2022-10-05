@@ -326,13 +326,13 @@ void set_monitor( GtkComboBox* self, page_t* ptr )
 
 void set_interval( GtkButton* self, page_t* ptr ) {}
 
-#include <sys/syslog.h>
+
 void set_graph_mode( GtkComboBox* self, page_t* ptr )
 {
     switch ( gtk_combo_box_get_active( self ) )
     {
-        case 0: ptr->entry->section->draw_func = &draw_lin; syslog(LOG_DEBUG, "set_graph_mode.lin"); break;
-        case 1: ptr->entry->section->draw_func = &draw_led; syslog(LOG_DEBUG, "set_graph_mode.led"); break;
+        case 0: ptr->entry->section->draw_func = &draw_lin; break;
+        case 1: ptr->entry->section->draw_func = &draw_led; break;
         default: return;
     }
 }
