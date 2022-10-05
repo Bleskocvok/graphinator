@@ -1,6 +1,8 @@
 
 #include "defaults.h"
 
+#include "collector.h"
+
 
 section_t default_sections[] =
 {

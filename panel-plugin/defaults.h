@@ -8,6 +8,9 @@
 #include "graphinator.h"
 
 
+#define M_COUNT( x )  ( sizeof( x ) / sizeof( *x ) )
+
+
 extern section_t default_sections[];
 extern size_t default_sections_count;
 

@@ -10,6 +10,8 @@
 #include <gtk/gtk.h>
 
 
+#define MK_RGB( r, g, b ) { r / 255.0, g / 255.0, b / 255.0 }
+
 #define  M_MIN( x, y )  ( ( ( x ) > ( y ) ) ? ( y ) : ( x ) )
 #define  M_MAX( x, y )  ( ( ( x ) > ( y ) ) ? ( x ) : ( y ) )
 
