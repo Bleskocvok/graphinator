@@ -24,3 +24,5 @@ size_t data_capacity( const data_t* data );
 double data_at( const data_t* data, size_t i );
 
 void data_push( data_t* data, double val );
+
+void data_resize( data_t* data, size_t capacity );

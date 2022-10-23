@@ -10,6 +10,8 @@ void entry_refresh( panel_entry_t* entry )
 {
     gtk_widget_set_size_request( entry->draw_area, entry->section->graph.w,
                                                    entry->section->graph.h );
+    data_resize( &entry->section->graph.data,
+                 graph_cols( &entry->section->graph ) );
 }
 
 

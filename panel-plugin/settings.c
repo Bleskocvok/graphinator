@@ -318,8 +318,11 @@ void settings_construct( settings_t* settings,
 }
 
 
+// TODO
 void add_entry( GtkButton* self, void* ptr ) {}
+// TODO
 void remove_entry( GtkButton* self, void* ptr ) {}
+
 
 void set_monitor( GtkComboBox* self, page_t* ptr )
 {
@@ -360,7 +363,9 @@ void set_graph_mode( GtkComboBox* self, page_t* ptr )
     }
 }
 
+// TODO
 void toggle_label( GtkCheckButton* self, page_t* ptr ) {}
+// TODO
 void set_label( GtkEntry* self, page_t* ptr ) {}
 
 

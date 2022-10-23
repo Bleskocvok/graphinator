@@ -13,6 +13,13 @@ void data_init( data_t* data, size_t capacity )
 }
 
 
+void data_free( data_t* data )
+{
+    free( data->vals );
+    *data = (data_t){ 0 };
+}
+
+
 size_t data_count( const data_t* data )
 {
     return data->count;
@@ -46,9 +53,17 @@ void data_push( data_t* data, double val )
 }
 
 
-void data_free( data_t* data )
+void data_resize( data_t* data, size_t new_cap )
 {
-    free( data->vals );
-    *data = (data_t){ 0 };
-}
+    if ( new_cap == data->capacity )
+        return;
 
+    data_t new_data = { 0 };
+    data_init( &new_data, new_cap );
+
+    for ( size_t i = 0; i < data->count; i++ )
+        data_push( &new_data, data_at( data, i ) );
+
+    data_free( data );
+    *data = new_data;
+}
