@@ -1,7 +1,7 @@
 AM_CPPFLAGS =                                       \
 	-DG_LOG_DOMAIN=\"xfce4-graphinator-plugin\"     \
 	-DPACKAGE_LOCALE_DIR=\"$(localedir)\"           \
-	-I$(top_srcdir)                                 \
+	-I $(top_srcdir)                                \
 	$(PLATFORM_CPPFLAGS)
 
 

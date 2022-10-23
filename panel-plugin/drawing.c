@@ -6,7 +6,19 @@
 
 int graph_cols( const graph_t* graph )
 {
+    if ( graph->blk_w + graph->pad_x == 0 )
+        return 1;
+
     return graph->w / ( graph->blk_w + graph->pad_x );
+}
+
+
+int graph_rows( const graph_t* graph )
+{
+    if ( graph->blk_h + graph->pad_y == 0 )
+        return 1;
+
+    return graph->h / ( graph->blk_h + graph->pad_y );
 }
 
 
@@ -28,12 +40,13 @@ void draw_led( GtkWidget* widget, cairo_t* cr, void* ptr )
     graph_t* sec = ptr;
     const graph_t g = *sec;
 
-    int rows = g.h / ( g.blk_h + g.pad_y );
+    int rows = graph_rows( &g );
     int cols = graph_cols( &g );
     int count = data_count( &sec->data );
 
     double max_value = graph_max_value( &g );
-    double blk = max_value / (double) rows;
+    double blk = rows == 0 ? 0
+                           : max_value / (double) rows;
 
     gtk_render_background( gtk_widget_get_style_context( widget ),
                            cr, 0, 0, g.w, g.h);
