@@ -14,7 +14,19 @@ typedef struct
 {
     panel_entry_t* entry;       // (non-owning ptr)
 
-    // TODO: add gtk ui thingies
+    GtkWidget* combo_monitor;
+    GtkWidget* combo_graph;
+    GtkWidget* spin_interval;
+    GtkWidget* check_label;
+    GtkWidget* entry_label;
+    GtkWidget* color_primary;
+    GtkWidget* color_secondary;
+    GtkWidget* spin_w;
+    GtkWidget* spin_h;
+    GtkWidget* spin_blk_w;
+    GtkWidget* spin_blk_h;
+    GtkWidget* spin_pad_x;
+    GtkWidget* spin_pad_y;
 
 } page_t;
 
