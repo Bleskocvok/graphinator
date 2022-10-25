@@ -83,8 +83,17 @@ static GtkWidget* create_combo_box( const char** opts, size_t count,
     gtk_widget_show( result );
     combo_add_options( GTK_COMBO_BOX_TEXT( result ), opts, count );
     gtk_combo_box_set_active( GTK_COMBO_BOX( result ), selected );
-
     return result;
+}
+
+
+static GtkWidget* create_color_chooser( double r, double g, double b,
+                                        double a )
+{
+    GdkRGBA rgba = { .red = r, .green = g, .blue = b, .alpha = a };
+    GtkWidget* color_chooser = gtk_color_button_new_with_rgba( &rgba );
+    gtk_widget_show( color_chooser );
+    return color_chooser;
 }
 
 
@@ -112,7 +121,6 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
     static const char* monitor_opts[] = { "CPU", "Memory", "Custom" };
     ctx->combo_monitor = create_combo_box( monitor_opts, 3, 0 );
     gtk_grid_attach( GTK_GRID( page ), ctx->combo_monitor, wide, row, wide, 1 );
-    g_signal_connect( ctx->combo_monitor, "changed", G_CALLBACK( set_monitor ), ctx );
 
     ++row;
 
@@ -121,9 +129,6 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
     ctx->spin_interval = gtk_spin_button_new_with_range( 0, 9999999, 1 );
     gtk_widget_show( ctx->spin_interval );
     gtk_grid_attach( GTK_GRID( page ), ctx->spin_interval, wide, row, wide, 1 );
-    g_signal_connect( ctx->spin_interval, "value-changed",
-                                          G_CALLBACK( set_interval ),
-                                          ctx );
 
     ++row;
 
@@ -132,7 +137,6 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
     static const char* graph_opts[] = { "Normal", "LED" };
     ctx->combo_graph = create_combo_box( graph_opts, 2, 0 );
     gtk_grid_attach( GTK_GRID( page ), ctx->combo_graph, wide, row, wide, 1 );
-    g_signal_connect( ctx->combo_graph, "changed", G_CALLBACK( set_graph_mode ), ctx );
 
     ++row;
 
@@ -152,31 +156,15 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     add_label( page, "Primary color:", 0, row, wide, 1, font_h, xalign );
 
-    {
-        GdkRGBA rgba = { .red = 0.0, .green = 0.0, .blue = 0.0, .alpha = 1.0 };
-        GtkWidget* color_chooser = gtk_color_button_new_with_rgba( &rgba );
-        gtk_widget_show( color_chooser );
-        gtk_grid_attach( GTK_GRID( page ), color_chooser, wide, row, wide, 1 );
-        g_signal_connect( color_chooser, "color-set",
-                                         G_CALLBACK( set_primary_color ),
-                                         ctx );
-        ctx->color_primary = color_chooser;
-    }
+    ctx->color_primary = create_color_chooser( 0, 0, 0, 1 );
+    gtk_grid_attach( GTK_GRID( page ), ctx->color_primary, wide, row, wide, 1 );
 
     ++row;
 
     add_label( page, "Secondary color:", 0, row, wide, 1, font_h, xalign );
 
-    {
-        GdkRGBA rgba = { .red = 1.0, .green = 0.0, .blue = 1.0, .alpha = 1.0 };
-        GtkWidget* color_chooser = gtk_color_button_new_with_rgba( &rgba );
-        gtk_widget_show( color_chooser );
-        gtk_grid_attach( GTK_GRID( page ), color_chooser, wide, row, wide, 1 );
-        g_signal_connect( color_chooser, "color-set",
-                                         G_CALLBACK( set_secondary_color ),
-                                         ctx );
-        ctx->color_secondary = color_chooser;
-    }
+    ctx->color_secondary = create_color_chooser( 1, 0, 1, 1 );
+    gtk_grid_attach( GTK_GRID( page ), ctx->color_secondary, wide, row, wide, 1 );
 
     ++row;
 
@@ -185,16 +173,10 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
     ctx->spin_w = gtk_spin_button_new_with_range( 0, 9999, 1 );
     gtk_widget_show( ctx->spin_w );
     gtk_grid_attach( GTK_GRID( page ), ctx->spin_w, wide, row, narrow, 1 );
-    g_signal_connect( ctx->spin_w, "value-changed",
-                                    G_CALLBACK( set_graph_w ),
-                                    ctx );
 
     ctx->spin_h = gtk_spin_button_new_with_range( 0, 9999, 1 );
     gtk_widget_show( ctx->spin_h );
     gtk_grid_attach( GTK_GRID( page ), ctx->spin_h, wide + narrow, row, narrow, 1 );
-    g_signal_connect( ctx->spin_h, "value-changed",
-                                   G_CALLBACK( set_graph_h ),
-                                   ctx );
 
     ++row;
 
@@ -203,16 +185,10 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
     ctx->spin_blk_w = gtk_spin_button_new_with_range( 0, 9999, 1 );
     gtk_widget_show( ctx->spin_blk_w );
     gtk_grid_attach( GTK_GRID( page ), ctx->spin_blk_w, wide, row, narrow, 1 );
-    g_signal_connect( ctx->spin_blk_w, "value-changed",
-                                       G_CALLBACK( set_graph_blk_w ),
-                                       ctx );
 
     ctx->spin_blk_h = gtk_spin_button_new_with_range( 0, 9999, 1 );
     gtk_widget_show( ctx->spin_blk_h );
     gtk_grid_attach( GTK_GRID( page ), ctx->spin_blk_h, wide + narrow, row, narrow, 1 );
-    g_signal_connect( ctx->spin_blk_h, "value-changed",
-                                       G_CALLBACK( set_graph_blk_h ),
-                                       ctx );
 
     ++row;
 
@@ -221,28 +197,45 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
     ctx->spin_pad_x = gtk_spin_button_new_with_range( 0, 9999, 1 );
     gtk_widget_show( ctx->spin_pad_x );
     gtk_grid_attach( GTK_GRID( page ), ctx->spin_pad_x, wide, row, narrow, 1 );
-    g_signal_connect( ctx->spin_pad_x, "value-changed",
-                                        G_CALLBACK( set_graph_pad_x ),
-                                        ctx );
 
     ctx->spin_pad_y = gtk_spin_button_new_with_range( 0, 9999, 1 );
     gtk_widget_show( ctx->spin_pad_y );
     gtk_grid_attach( GTK_GRID( page ), ctx->spin_pad_y, wide + narrow,
                                         row, narrow, 1 );
-    g_signal_connect( ctx->spin_pad_y, "value-changed",
-                                        G_CALLBACK( set_graph_pad_y ),
-                                        ctx );
 
     ++row;
 
     {
-        GtkWidget* but = gtk_button_new_with_label( "Remove section" );
-        gtk_widget_show( but );
-        gtk_grid_attach( GTK_GRID( page ), but, 0, row, narrow, 1 );
-
+        GtkWidget* but_remove = gtk_button_new_with_label( "Remove section" );
+        gtk_widget_show( but_remove );
+        gtk_grid_attach( GTK_GRID( page ), but_remove, 0, row, narrow, 1 );
         // g_signal_connect(  );
     }
+
     ++row;
+
+    g_signal_connect( ctx->combo_monitor, "changed",
+                                        G_CALLBACK( set_monitor ), ctx );
+    g_signal_connect( ctx->spin_interval, "value-changed",
+                                        G_CALLBACK( set_interval ), ctx );
+    g_signal_connect( ctx->combo_graph, "changed",
+                                        G_CALLBACK( set_graph_mode ), ctx );
+    g_signal_connect( ctx->color_primary, "color-set",
+                                        G_CALLBACK( set_primary_color ), ctx );
+    g_signal_connect( ctx->color_secondary, "color-set",
+                                        G_CALLBACK( set_secondary_color ), ctx );
+    g_signal_connect( ctx->spin_w, "value-changed",
+                                        G_CALLBACK( set_graph_w ), ctx );
+    g_signal_connect( ctx->spin_h, "value-changed",
+                                        G_CALLBACK( set_graph_h ), ctx );
+    g_signal_connect( ctx->spin_blk_w, "value-changed",
+                                        G_CALLBACK( set_graph_blk_w ), ctx );
+    g_signal_connect( ctx->spin_blk_h, "value-changed",
+                                        G_CALLBACK( set_graph_blk_h ), ctx );
+    g_signal_connect( ctx->spin_pad_x, "value-changed",
+                                        G_CALLBACK( set_graph_pad_x ), ctx );
+    g_signal_connect( ctx->spin_pad_y, "value-changed",
+                                        G_CALLBACK( set_graph_pad_y ), ctx );
 }
 
 
