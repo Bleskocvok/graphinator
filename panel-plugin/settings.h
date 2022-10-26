@@ -14,13 +14,13 @@ typedef struct
 {
     panel_entry_t* entry;       // (non-owning ptr)
 
-    GtkWidget* combo_monitor;
+    GtkWidget* combo_mon;
     GtkWidget* combo_graph;
-    GtkWidget* spin_interval;
+    GtkWidget* spin_inter;
     GtkWidget* check_label;
     GtkWidget* entry_label;
-    GtkWidget* color_primary;
-    GtkWidget* color_secondary;
+    GtkWidget* color_prim;
+    GtkWidget* color_secon;
     GtkWidget* spin_w;
     GtkWidget* spin_h;
     GtkWidget* spin_blk_w;

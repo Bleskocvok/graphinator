@@ -16,24 +16,29 @@ static const char* GRAPHS[]   = { "Normal", "LED" };
 //
 
 // Callbacks
-void add_entry(             GtkButton*      self,   void*   ptr   );
-void remove_entry(          GtkButton*      self,   void*   ptr   );
-void set_monitor(           GtkComboBox*    self,   page_t* ptr   );
-void set_interval(          GtkSpinButton*  self,   page_t* ptr   );
-void set_graph_mode(        GtkComboBox*    self,   page_t* ptr   );
-void toggle_label(          GtkCheckButton* self,   page_t* ptr   );
-void set_label(             GtkEntry*       self,   page_t* ptr   );
-void set_primary_color(     GtkColorButton* self,   page_t* ptr   );
-void set_secondary_color(   GtkColorButton* self,   page_t* ptr   );
-void set_graph_w(           GtkSpinButton*  self,   page_t* ptr   );
-void set_graph_h(           GtkSpinButton*  self,   page_t* ptr   );
-void set_graph_blk_w(       GtkSpinButton*  self,   page_t* ptr   );
-void set_graph_blk_h(       GtkSpinButton*  self,   page_t* ptr   );
-void set_graph_pad_x(       GtkSpinButton*  self,   page_t* ptr   );
-void set_graph_pad_y(       GtkSpinButton*  self,   page_t* ptr   );
+void add_entry(         GtkButton*      self,               void*   ptr  );
+void remove_entry(      GtkButton*      self,               void*   ptr  );
+void set_monitor(       GtkComboBox*    self,               page_t* ptr  );
+void set_interval(      GtkSpinButton*  self,               page_t* ptr  );
+void set_graph_mode(    GtkComboBox*    self,               page_t* ptr  );
+void toggle_label(      GtkCheckButton* self,               page_t* ptr  );
+void set_label(         GtkEntry*       self,  char* text,  page_t* ptr  );
+void set_prim_color(    GtkColorButton* self,               page_t* ptr  );
+void set_secon_color(   GtkColorButton* self,               page_t* ptr  );
+void set_w(             GtkSpinButton*  self,               page_t* ptr  );
+void set_h(             GtkSpinButton*  self,               page_t* ptr  );
+void set_blk_w(         GtkSpinButton*  self,               page_t* ptr  );
+void set_blk_h(         GtkSpinButton*  self,               page_t* ptr  );
+void set_pad_x(         GtkSpinButton*  self,               page_t* ptr  );
+void set_pad_y(         GtkSpinButton*  self,               page_t* ptr  );
+
 
 // Main
+
 void add_page( GtkNotebook* notebook, page_t* ctx );
+void page_set_current_settings( page_t* ctx );
+void page_setup_signals( page_t* p );
+
 void settings_free( settings_t* settings );
 void settings_construct( settings_t* settings,
                          GtkWidget* container,
@@ -44,10 +49,12 @@ void settings_construct( settings_t* settings,
 // Utility functions
 //
 
+
 static int read_spin( GtkSpinButton* in )
 {
     return gtk_spin_button_get_value_as_int( in );
 }
+
 
 static GtkWidget* add_label( GtkWidget* page,
                              const char* txt,
@@ -78,13 +85,36 @@ static GtkWidget* create_combo_box( const char** opts, size_t count,
 }
 
 
-static GtkWidget* create_color_chooser( double r, double g, double b,
-                                        double a )
+static GtkWidget* create_color_button( double r, double g, double b,
+                                       double a )
 {
     GdkRGBA rgba = { .red = r, .green = g, .blue = b, .alpha = a };
     GtkWidget* color_chooser = gtk_color_button_new_with_rgba( &rgba );
     gtk_widget_show( color_chooser );
     return color_chooser;
+}
+
+
+static void rgba_to_array( GdkRGBA* rgba, double* out )
+{
+    out[ 0 ] = rgba->red;
+    out[ 1 ] = rgba->green;
+    out[ 2 ] = rgba->blue;
+    // TODO: add alpha
+}
+
+
+static GdkRGBA array_to_rgba( double* arr )
+{
+    GdkRGBA rgba = (GdkRGBA)
+    {
+        .red   = arr[ 0 ],
+        .green = arr[ 1 ],
+        .blue  = arr[ 2 ],
+        .alpha = 1,
+        // TODO: read alpha from arr
+    };
+    return rgba;
 }
 
 
@@ -114,16 +144,16 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     add_label( page, "Monitor:", 0, row, wide, 1, font_h, xalign );
 
-    ctx->combo_monitor = create_combo_box( MONITORS, M_COUNT( MONITORS ), 0 );
-    gtk_grid_attach( GTK_GRID( page ), ctx->combo_monitor, wide, row, wide, 1 );
+    ctx->combo_mon = create_combo_box( MONITORS, M_COUNT( MONITORS ), 0 );
+    gtk_grid_attach( GTK_GRID( page ), ctx->combo_mon, wide, row, wide, 1 );
 
     ++row;
 
     add_label( page, "Update interval (ms):", 0, row, wide, 1, font_h, xalign );
 
-    ctx->spin_interval = gtk_spin_button_new_with_range( 0, 9999999, 1 );
-    gtk_widget_show( ctx->spin_interval );
-    gtk_grid_attach( GTK_GRID( page ), ctx->spin_interval, wide, row, wide, 1 );
+    ctx->spin_inter = gtk_spin_button_new_with_range( 0, 9999999, 1 );
+    gtk_widget_show( ctx->spin_inter );
+    gtk_grid_attach( GTK_GRID( page ), ctx->spin_inter, wide, row, wide, 1 );
 
     ++row;
 
@@ -144,21 +174,21 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
     gtk_entry_set_placeholder_text( GTK_ENTRY( ctx->entry_label ), "Label" );
     gtk_widget_set_sensitive( ctx->entry_label, FALSE );
     gtk_grid_attach( GTK_GRID( page ), ctx->entry_label, wide, row, wide, 1 );
-    // g_signal_connect(  );
 
     ++row;
 
     add_label( page, "Primary color:", 0, row, wide, 1, font_h, xalign );
 
-    ctx->color_primary = create_color_chooser( 0, 0, 0, 1 );
-    gtk_grid_attach( GTK_GRID( page ), ctx->color_primary, wide, row, wide, 1 );
+    ctx->color_prim = create_color_button( 0, 0, 0, 1 );
+    gtk_grid_attach( GTK_GRID( page ), ctx->color_prim, wide, row, wide, 1 );
 
     ++row;
 
     add_label( page, "Secondary color:", 0, row, wide, 1, font_h, xalign );
 
-    ctx->color_secondary = create_color_chooser( 1, 0, 1, 1 );
-    gtk_grid_attach( GTK_GRID( page ), ctx->color_secondary, wide, row, wide, 1 );
+    ctx->color_secon = create_color_button( 1, 0, 1, 1 );
+    gtk_grid_attach( GTK_GRID( page ), ctx->color_secon, wide, row,
+                                       wide, 1 );
 
     ++row;
 
@@ -170,11 +200,13 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     ctx->spin_h = gtk_spin_button_new_with_range( 0, 9999, 1 );
     gtk_widget_show( ctx->spin_h );
-    gtk_grid_attach( GTK_GRID( page ), ctx->spin_h, wide + narrow, row, narrow, 1 );
+    gtk_grid_attach( GTK_GRID( page ), ctx->spin_h, wide + narrow, row,
+                                       narrow, 1 );
 
     ++row;
 
-    add_label( page, u8"Block Width ⨯ Block Height:", 0, row, wide, 1, font_h, xalign );
+    add_label( page, u8"Block Width ⨯ Block Height:", 0, row, wide, 1, font_h,
+               xalign );
 
     ctx->spin_blk_w = gtk_spin_button_new_with_range( 0, 9999, 1 );
     gtk_widget_show( ctx->spin_blk_w );
@@ -182,11 +214,13 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     ctx->spin_blk_h = gtk_spin_button_new_with_range( 0, 9999, 1 );
     gtk_widget_show( ctx->spin_blk_h );
-    gtk_grid_attach( GTK_GRID( page ), ctx->spin_blk_h, wide + narrow, row, narrow, 1 );
+    gtk_grid_attach( GTK_GRID( page ), ctx->spin_blk_h, wide + narrow, row,
+                                       narrow, 1 );
 
     ++row;
 
-    add_label( page, u8"Spacing X ⨯ Spacing Y:", 0, row, wide, 1, font_h, xalign );
+    add_label( page, u8"Spacing X ⨯ Spacing Y:", 0, row, wide, 1, font_h,
+               xalign );
 
     ctx->spin_pad_x = gtk_spin_button_new_with_range( 0, 9999, 1 );
     gtk_widget_show( ctx->spin_pad_x );
@@ -208,30 +242,67 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     ++row;
 
-    g_signal_connect( ctx->combo_monitor, "changed",
-                                        G_CALLBACK( set_monitor ), ctx );
-    g_signal_connect( ctx->spin_interval, "value-changed",
-                                        G_CALLBACK( set_interval ), ctx );
-    g_signal_connect( ctx->combo_graph, "changed",
-                                        G_CALLBACK( set_graph_mode ), ctx );
-    g_signal_connect( ctx->check_label, "toggled",
-                                        G_CALLBACK( toggle_label ), ctx );
-    g_signal_connect( ctx->color_primary, "color-set",
-                                        G_CALLBACK( set_primary_color ), ctx );
-    g_signal_connect( ctx->color_secondary, "color-set",
-                                        G_CALLBACK( set_secondary_color ), ctx );
-    g_signal_connect( ctx->spin_w, "value-changed",
-                                        G_CALLBACK( set_graph_w ), ctx );
-    g_signal_connect( ctx->spin_h, "value-changed",
-                                        G_CALLBACK( set_graph_h ), ctx );
-    g_signal_connect( ctx->spin_blk_w, "value-changed",
-                                        G_CALLBACK( set_graph_blk_w ), ctx );
-    g_signal_connect( ctx->spin_blk_h, "value-changed",
-                                        G_CALLBACK( set_graph_blk_h ), ctx );
-    g_signal_connect( ctx->spin_pad_x, "value-changed",
-                                        G_CALLBACK( set_graph_pad_x ), ctx );
-    g_signal_connect( ctx->spin_pad_y, "value-changed",
-                                        G_CALLBACK( set_graph_pad_y ), ctx );
+    page_setup_signals( ctx );
+    
+    page_set_current_settings( ctx );
+}
+
+
+void page_setup_signals( page_t* p )
+{
+#define  connect( w, str, call, p )  \
+    g_signal_connect( w, str, G_CALLBACK( call ), p )
+
+    connect( p->combo_mon,   "changed",         set_monitor,     p );
+    connect( p->spin_inter,  "value-changed",   set_interval,    p );
+    connect( p->combo_graph, "changed",         set_graph_mode,  p );
+    connect( p->check_label, "toggled",         toggle_label,    p );
+    connect( p->entry_label, "preedit-changed", toggle_label,    p );
+    connect( p->color_prim,  "color-set",       set_prim_color,  p );
+    connect( p->color_secon, "color-set",       set_secon_color, p );
+    connect( p->spin_w,      "value-changed",   set_w,           p );
+    connect( p->spin_h,      "value-changed",   set_h,           p );
+    connect( p->spin_blk_w,  "value-changed",   set_blk_w,       p );
+    connect( p->spin_blk_h,  "value-changed",   set_blk_h,       p );
+    connect( p->spin_pad_x,  "value-changed",   set_pad_x,       p );
+    connect( p->spin_pad_y,  "value-changed",   set_pad_y,       p );
+
+#undef  connect
+}
+
+
+void page_set_current_settings( page_t* p )
+{
+    // p->combo_mon;
+    // p->combo_graph;
+    
+    gtk_spin_button_set_value( GTK_SPIN_BUTTON( p->spin_inter ),
+                               p->entry->section->interval );
+
+    // p->check_label;
+    // p->entry_label;
+
+    {
+        GdkRGBA c = array_to_rgba( p->entry->section->graph.rgb_on );
+        gtk_color_chooser_set_rgba( GTK_COLOR_CHOOSER( p->color_prim ), &c );
+    }
+    {
+        GdkRGBA c = array_to_rgba( p->entry->section->graph.rgb_off );
+        gtk_color_chooser_set_rgba( GTK_COLOR_CHOOSER( p->color_secon ), &c );
+    }
+
+    gtk_spin_button_set_value( GTK_SPIN_BUTTON( p->spin_w ),
+                               p->entry->section->graph.w );
+    gtk_spin_button_set_value( GTK_SPIN_BUTTON( p->spin_h ),
+                               p->entry->section->graph.h );
+    gtk_spin_button_set_value( GTK_SPIN_BUTTON( p->spin_blk_w ),
+                               p->entry->section->graph.blk_w );
+    gtk_spin_button_set_value( GTK_SPIN_BUTTON( p->spin_blk_h ),
+                               p->entry->section->graph.blk_h );
+    gtk_spin_button_set_value( GTK_SPIN_BUTTON( p->spin_pad_x ),
+                               p->entry->section->graph.pad_x );
+    gtk_spin_button_set_value( GTK_SPIN_BUTTON( p->spin_pad_y ),
+                               p->entry->section->graph.pad_y );
 }
 
 
@@ -326,25 +397,17 @@ void toggle_label( GtkCheckButton* self, page_t* ptr )
 
 
 // TODO
-void set_label( GtkEntry* self, page_t* ptr ) {}
+void set_label( GtkEntry* self, char* text, page_t* ptr ) {}
 
 
-static void rgba_to_array( GdkRGBA* rgba, double* out )
-{
-    out[ 0 ] = rgba->red;
-    out[ 1 ] = rgba->green;
-    out[ 2 ] = rgba->blue;
-    // TODO: add alpha
-}
-
-void set_primary_color( GtkColorButton* self, page_t* ptr )
+void set_prim_color( GtkColorButton* self, page_t* ptr )
 {
     GdkRGBA rgba = { 0 };
     gtk_color_chooser_get_rgba( GTK_COLOR_CHOOSER( self ), &rgba );
     rgba_to_array( &rgba, ptr->entry->section->graph.rgb_on );
 }
 
-void set_secondary_color( GtkColorButton* self, page_t* ptr )
+void set_secon_color( GtkColorButton* self, page_t* ptr )
 {
     GdkRGBA rgba = { 0 };
     gtk_color_chooser_get_rgba( GTK_COLOR_CHOOSER( self ), &rgba );
@@ -352,37 +415,37 @@ void set_secondary_color( GtkColorButton* self, page_t* ptr )
 }
 
 
-void set_graph_w( GtkSpinButton* self, page_t* ptr )
+void set_w( GtkSpinButton* self, page_t* ptr )
 {
     ptr->entry->section->graph.w = read_spin( self );
     entry_refresh( ptr->entry );
 }
 
-void set_graph_h( GtkSpinButton* self, page_t* ptr )
+void set_h( GtkSpinButton* self, page_t* ptr )
 {
     ptr->entry->section->graph.h = read_spin( self );
     entry_refresh( ptr->entry );
 }
 
-void set_graph_blk_w( GtkSpinButton* self, page_t* ptr )
+void set_blk_w( GtkSpinButton* self, page_t* ptr )
 {
     ptr->entry->section->graph.blk_w = read_spin( self );
     entry_refresh( ptr->entry );
 }
 
-void set_graph_blk_h( GtkSpinButton* self, page_t* ptr )
+void set_blk_h( GtkSpinButton* self, page_t* ptr )
 {
     ptr->entry->section->graph.blk_h = read_spin( self );
     entry_refresh( ptr->entry );
 }
 
-void set_graph_pad_x( GtkSpinButton* self, page_t* ptr )
+void set_pad_x( GtkSpinButton* self, page_t* ptr )
 {
     ptr->entry->section->graph.pad_x = read_spin( self );
     entry_refresh( ptr->entry );
 }
 
-void set_graph_pad_y( GtkSpinButton* self, page_t* ptr )
+void set_pad_y( GtkSpinButton* self, page_t* ptr )
 {
     ptr->entry->section->graph.pad_y = read_spin( self );
     entry_refresh( ptr->entry );
