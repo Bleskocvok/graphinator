@@ -3,7 +3,6 @@
 #ifndef __DEFAULTS_H__
 #define __DEFAULTS_H__
 
-
 // custom
 #include "graphinator.h"
 

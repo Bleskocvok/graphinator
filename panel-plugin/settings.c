@@ -4,8 +4,11 @@
 #include <stdlib.h>     // NULL, calloc
 
 
+#define M_COUNT( x )  ( sizeof( x ) / sizeof( *x ) )
+
 
 static const char* MONITORS[] = { "CPU", "Memory", "Custom" };
+static const char* GRAPHS[]   = { "Normal", "LED" };
 
 
 //
@@ -40,25 +43,11 @@ void settings_construct( settings_t* settings,
 //
 // Utility functions
 //
+
 static int read_spin( GtkSpinButton* in )
 {
     return gtk_spin_button_get_value_as_int( in );
 }
-
-
-//
-// Definitions
-//
-
-
-static void combo_add_options( GtkComboBoxText* combo,
-                               const char** opts,
-                               size_t count )
-{
-    for ( size_t i = 0; i < count; i++ )
-        gtk_combo_box_text_append_text( combo, opts[ i ] );
-}
-
 
 static GtkWidget* add_label( GtkWidget* page,
                              const char* txt,
@@ -81,8 +70,10 @@ static GtkWidget* create_combo_box( const char** opts, size_t count,
 {
     GtkWidget* result = gtk_combo_box_text_new();
     gtk_widget_show( result );
-    combo_add_options( GTK_COMBO_BOX_TEXT( result ), opts, count );
-    gtk_combo_box_set_active( GTK_COMBO_BOX( result ), selected );
+    GtkComboBoxText* combo = GTK_COMBO_BOX_TEXT( result );
+    for ( size_t i = 0; i < count; i++ )
+        gtk_combo_box_text_append_text( combo, opts[ i ] );
+    gtk_combo_box_set_active( GTK_COMBO_BOX( combo ), selected );
     return result;
 }
 
@@ -95,6 +86,11 @@ static GtkWidget* create_color_chooser( double r, double g, double b,
     gtk_widget_show( color_chooser );
     return color_chooser;
 }
+
+
+//
+// Definitions
+//
 
 
 void add_page( GtkNotebook* notebook, page_t* ctx )
@@ -118,8 +114,7 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     add_label( page, "Monitor:", 0, row, wide, 1, font_h, xalign );
 
-    static const char* monitor_opts[] = { "CPU", "Memory", "Custom" };
-    ctx->combo_monitor = create_combo_box( monitor_opts, 3, 0 );
+    ctx->combo_monitor = create_combo_box( MONITORS, M_COUNT( MONITORS ), 0 );
     gtk_grid_attach( GTK_GRID( page ), ctx->combo_monitor, wide, row, wide, 1 );
 
     ++row;
@@ -134,8 +129,7 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     add_label( page, "Graph mode:", 0, row, wide, 1, font_h, xalign );
 
-    static const char* graph_opts[] = { "Normal", "LED" };
-    ctx->combo_graph = create_combo_box( graph_opts, 2, 0 );
+    ctx->combo_graph = create_combo_box( GRAPHS, M_COUNT( GRAPHS ), 0 );
     gtk_grid_attach( GTK_GRID( page ), ctx->combo_graph, wide, row, wide, 1 );
 
     ++row;
@@ -220,6 +214,8 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
                                         G_CALLBACK( set_interval ), ctx );
     g_signal_connect( ctx->combo_graph, "changed",
                                         G_CALLBACK( set_graph_mode ), ctx );
+    g_signal_connect( ctx->check_label, "toggled",
+                                        G_CALLBACK( toggle_label ), ctx );
     g_signal_connect( ctx->color_primary, "color-set",
                                         G_CALLBACK( set_primary_color ), ctx );
     g_signal_connect( ctx->color_secondary, "color-set",
@@ -321,8 +317,14 @@ void set_graph_mode( GtkComboBox* self, page_t* ptr )
     }
 }
 
-// TODO
-void toggle_label( GtkCheckButton* self, page_t* ptr ) {}
+
+void toggle_label( GtkCheckButton* self, page_t* ptr )
+{
+    int b = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( self ) );
+    gtk_widget_set_sensitive( ptr->entry_label, b );
+}
+
+
 // TODO
 void set_label( GtkEntry* self, page_t* ptr ) {}
 
