@@ -1,6 +1,12 @@
 
 #include "panel_entry.h"
 
+#include <string.h>     // strlen
+#include <stdlib.h>     // calloc, realloc, free
+
+
+#define MAX_F_CHARS 256
+
 
 static gboolean collector( gpointer ptr );
 static void redraw( GtkWidget* widget, cairo_t* cr, section_t* sec );
@@ -40,6 +46,9 @@ void entries_free( entries_t* entries )
     {
         data_free( &entries->ptr[ i ].section->graph.data );
         collector_free( &entries->ptr[ i ].section->collector );
+
+        g_free( entries->ptr[ i ].label_markup_fmt );
+        free( entries->ptr[ i ].label_buffer );
     }
 
     free( entries->ptr );
@@ -71,6 +80,18 @@ void entries_add( entries_t* entries, GtkBox* box, section_t* sec )
         entry->label = gtk_label_new( "" );
         gtk_widget_show( entry->label );
         gtk_box_pack_start( box, entry->label, FALSE, FALSE, 0 );
+
+        // TODO: validate that fmt contains %d
+
+        entry->label_markup_fmt = g_markup_printf_escaped(
+                                        "<tt>"
+                                        "<span size=\"small\">"
+                                        "%s"
+                                        "</span>"
+                                        "</tt>", sec->label_fmt );
+
+        entry->label_bsize = strlen( entry->label_markup_fmt );
+        entry->label_buffer = calloc( MAX_F_CHARS + entry->label_bsize, 1 );
     }
 
     // setup interval
@@ -90,19 +111,8 @@ void entries_add( entries_t* entries, GtkBox* box, section_t* sec )
 
 static void entry_update_label( panel_entry_t* ent, float val )
 {
-    // TODO: optimize probably
-    // TODO: also make more general
-    char buff[ 256 ] = { 0 };
-    snprintf( buff, sizeof( buff ), ent->section->label_fmt, val );
-    // gtk_label_set_text( GTK_LABEL( ent->label ), buff );
-
-    char* markup = g_markup_printf_escaped( "<tt>"
-                                            "<span size=\"small\">"
-                                            "%s"
-                                            "</span>"
-                                            "</tt>", buff );
-    gtk_label_set_markup( GTK_LABEL( ent->label ), markup );
-    g_free( markup );
+    snprintf( ent->label_buffer, ent->label_bsize, ent->label_markup_fmt, val );
+    gtk_label_set_markup( GTK_LABEL( ent->label ), ent->label_buffer );
 }
 
 

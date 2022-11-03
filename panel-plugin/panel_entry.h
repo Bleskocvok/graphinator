@@ -7,6 +7,8 @@
 #include "drawing.h"
 #include "collector.h"
 
+#include <stddef.h>     // size_t
+
 #include <gtk/gtk.h>    // GtkWidget
 
 
@@ -33,6 +35,10 @@ typedef struct
     GtkWidget* label;
 
     unsigned timer;
+
+    char* label_markup_fmt;
+    char* label_buffer;
+    size_t label_bsize;
 
 } panel_entry_t;
 
