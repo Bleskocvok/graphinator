@@ -88,6 +88,24 @@ void entries_add( entries_t* entries, GtkBox* box, section_t* sec )
 }
 
 
+static void entry_update_label( panel_entry_t* ent, float val )
+{
+    // TODO: optimize probably
+    // TODO: also make more general
+    char buff[ 256 ] = { 0 };
+    snprintf( buff, sizeof( buff ), ent->section->label_fmt, val );
+    // gtk_label_set_text( GTK_LABEL( ent->label ), buff );
+
+    char* markup = g_markup_printf_escaped( "<tt>"
+                                            "<span size=\"small\">"
+                                            "%s"
+                                            "</span>"
+                                            "</tt>", buff );
+    gtk_label_set_markup( GTK_LABEL( ent->label ), markup );
+    g_free( markup );
+}
+
+
 static gboolean collector( gpointer ptr )
 {
     panel_entry_t* ent = ptr;
@@ -99,21 +117,9 @@ static gboolean collector( gpointer ptr )
     gtk_widget_queue_draw_area( ent->draw_area, 0, 0, ent->section->graph.w,
                                                       ent->section->graph.h );
 
-    // TODO: optimize probably
-    // TODO: also make more general
     if ( ent->section->label_fmt )
     {
-        char buff[ 256 ] = { 0 };
-        snprintf( buff, sizeof( buff ), ent->section->label_fmt, val );
-        // gtk_label_set_text( GTK_LABEL( ent->label ), buff );
-
-        char* markup = g_markup_printf_escaped( "<tt>"
-                                                "<span size=\"small\">"
-                                                "%s"
-                                                "</span>"
-                                                "</tt>", buff );
-        gtk_label_set_markup( GTK_LABEL( ent->label ), markup );
-        g_free( markup );
+        entry_update_label( ent, val );
     }
 
     return G_SOURCE_CONTINUE;

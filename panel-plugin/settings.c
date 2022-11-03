@@ -1,14 +1,29 @@
 
 #include "settings.h"
 
+#include "utils.h"
+
 #include <stdlib.h>     // NULL, calloc
 
 
-#define M_COUNT( x )  ( sizeof( x ) / sizeof( *x ) )
+#define  MONITORS_COUNT  M_COUNT( MONITORS_STR )
+#define  GRAPHS_COUNT    M_COUNT( GRAPHS_STR )
+
+const char* MONITORS_STR[] = { "CPU", "Memory" };
+
+const collector_t MONITORS_COL[ MONITORS_COUNT ] =
+{
+    (collector_t) { .init    = init_cpu_data,
+                    .collect = collect_cpu_data,
+                    .free    = free_cpu_data,   },
+    (collector_t) { .init    = init_mem_data,
+                    .collect = collect_mem_data,
+                    .free    = free_mem_data,   },
+};
 
 
-static const char* MONITORS[] = { "CPU", "Memory", "Custom" };
-static const char* GRAPHS[]   = { "Normal", "LED" };
+const char* GRAPHS_STR[] = { "Normal", "LED" };
+const draw_func_t GRAPHS_FUNC[ GRAPHS_COUNT ] = { draw_lin, draw_led, };
 
 
 //
@@ -144,7 +159,7 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     add_label( page, "Monitor:", 0, row, wide, 1, font_h, xalign );
 
-    ctx->combo_mon = create_combo_box( MONITORS, M_COUNT( MONITORS ), 0 );
+    ctx->combo_mon = create_combo_box( MONITORS_STR, MONITORS_COUNT, 0 );
     gtk_grid_attach( GTK_GRID( page ), ctx->combo_mon, wide, row, wide, 1 );
 
     ++row;
@@ -159,7 +174,7 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     add_label( page, "Graph mode:", 0, row, wide, 1, font_h, xalign );
 
-    ctx->combo_graph = create_combo_box( GRAPHS, M_COUNT( GRAPHS ), 0 );
+    ctx->combo_graph = create_combo_box( GRAPHS_STR, M_COUNT( GRAPHS_STR ), 0 );
     gtk_grid_attach( GTK_GRID( page ), ctx->combo_graph, wide, row, wide, 1 );
 
     ++row;
@@ -192,7 +207,7 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     ++row;
 
-    add_label( page, u8"Width ⨯ Height:", 0, row, wide, 1, font_h, xalign );
+    add_label( page, M_U8"Width ⨯ Height:", 0, row, wide, 1, font_h, xalign );
 
     ctx->spin_w = gtk_spin_button_new_with_range( 0, 9999, 1 );
     gtk_widget_show( ctx->spin_w );
@@ -205,7 +220,7 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     ++row;
 
-    add_label( page, u8"Block Width ⨯ Block Height:", 0, row, wide, 1, font_h,
+    add_label( page, M_U8"Block Width ⨯ Block Height:", 0, row, wide, 1, font_h,
                xalign );
 
     ctx->spin_blk_w = gtk_spin_button_new_with_range( 0, 9999, 1 );
@@ -219,7 +234,7 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     ++row;
 
-    add_label( page, u8"Spacing X ⨯ Spacing Y:", 0, row, wide, 1, font_h,
+    add_label( page, M_U8"Spacing X ⨯ Spacing Y:", 0, row, wide, 1, font_h,
                xalign );
 
     ctx->spin_pad_x = gtk_spin_button_new_with_range( 0, 9999, 1 );

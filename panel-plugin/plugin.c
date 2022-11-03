@@ -4,6 +4,7 @@
 #include "defaults.h"
 #include "graphinator.h"    // plugin_construct_in_container, panel_t
 #include "settings.h"       // settings_construct
+#include "utils.h"
 
 // gtk, xfce
 #include <gtk/gtk.h>
@@ -132,7 +133,7 @@ static void plugin_about( XfcePanelPlugin* plugin )
                            "program-name", "graphinator",
                            "comments",     "Graphinator is a plugin",
                            "website",      WEBSITE,
-                           "copyright",    u8"Copyright © 2022 " AUTHOR "\n",
+                           "copyright",    M_U8"Copyright © 2022 " AUTHOR "\n",
                            "authors",      (const char*[]){ AUTHOR, NULL },
                            NULL );
 
