@@ -8,9 +8,7 @@
 section_t default_sections[] =
 {
     {
-        .collector = (collector_t){ .collect = collect_cpu_data,
-                                    .init = init_cpu_data,
-                                    .free = free_cpu_data,       },
+        .collector = CPU_COLLECTOR_INIT,
 
         .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
                             .pad_x =  1, .pad_y =  1,
@@ -30,9 +28,7 @@ section_t default_sections[] =
     },
 
     {
-        .collector = (collector_t){ .collect = collect_mem_data,
-                                    .init = init_mem_data,
-                                    .free = free_mem_data,       },
+        .collector = MEM_COLLECTOR_INIT,
 
         .graph = (graph_t){ .blk_w =  2, .blk_h =  1,
                             .pad_x =  1, .pad_y =  1,

@@ -7,6 +7,10 @@
 #include <stdlib.h>         // NULL
 
 
+const collector_t cpu_collector = CPU_COLLECTOR_INIT;
+const collector_t mem_collector = MEM_COLLECTOR_INIT;
+
+
 void collector_init( collector_t* collector )
 {
     if ( collector->init )
@@ -14,17 +18,15 @@ void collector_init( collector_t* collector )
 }
 
 
-void collector_reset( collector_t* collector, init_func_t init,
-                      collect_func_t collect, free_func_t free )
+void collector_reset( collector_t* collector, collector_t* new_c )
 {
     if ( collector->ptr )
         collector_free( collector );
 
-    collector->init = init;
-    collector->collect = collect;
-    collector->free = free;
+    *collector = *new_c;
 
-    collector_init( collector );
+    if ( !collector->ptr )
+        collector_init( collector );
 }
 
 
@@ -41,6 +43,12 @@ void collector_free( collector_t* collector )
 double collector_collect( collector_t* collector )
 {
     return collector->collect( collector->ptr );
+}
+
+
+const char* collector_get_unit( const collector_t* collector )
+{
+
 }
 
 

@@ -2,6 +2,7 @@
 #include "settings.h"
 
 #include "utils.h"
+#include "collector.h"
 
 #include <stdlib.h>     // NULL, calloc
 #include <string.h>     // strncat
@@ -12,14 +13,10 @@
 
 const char* MONITORS_STR[] = { "CPU", "Memory" };
 
-const collector_t MONITORS_COL[ MONITORS_COUNT ] =
+const collector_t* MONITORS_COL[ MONITORS_COUNT ] =
 {
-    (collector_t) { .init    = init_cpu_data,
-                    .collect = collect_cpu_data,
-                    .free    = free_cpu_data,   },
-    (collector_t) { .init    = init_mem_data,
-                    .collect = collect_mem_data,
-                    .free    = free_mem_data,   },
+    &mem_collector,
+    &cpu_collector,
 };
 
 
@@ -372,20 +369,11 @@ void set_monitor( GtkComboBox* self, page_t* ptr )
 {
     int active = gtk_combo_box_get_active( self );
 
-    switch ( active )
-    {
-        case 0:
-            collector_reset( &ptr->entry->section->collector, init_cpu_data,
-                                                              collect_cpu_data,
-                                                              free_cpu_data );
-            break;
-        case 1:
-            collector_reset( &ptr->entry->section->collector, init_mem_data,
-                                                              collect_mem_data,
-                                                              free_mem_data );
-            break;
-        default: return;
-    }
+    if ( active >= MONITORS_COUNT )
+        return;
+
+    collector_t col = *MONITORS_COL[ active ];
+    collector_reset( &ptr->entry->section->collector, &col );
 }
 
 
