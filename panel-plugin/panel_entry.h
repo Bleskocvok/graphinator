@@ -12,13 +12,20 @@
 #include <gtk/gtk.h>    // GtkWidget
 
 
+#define LABEL_MAX_LEN 256
+
+
 typedef struct
 {
     collector_t collector;
 
     int interval;
 
-    const char* label_fmt;
+    int label_enabled;
+    char label_str[ LABEL_MAX_LEN ];
+    char label_unit[ LABEL_MAX_LEN ];
+    int label_decimals;
+    int label_digits;
 
     graph_t graph;
 
@@ -54,6 +61,7 @@ typedef struct
 
 void entry_refresh( panel_entry_t* entry );
 void entry_set_interval( panel_entry_t* entry, int new_ms );
+void entry_refresh_label( panel_entry_t* entry );
 
 void entries_init( entries_t* entries, size_t reserved );
 void entries_free( entries_t* entries );

@@ -21,6 +21,31 @@ void entry_refresh( panel_entry_t* entry )
 }
 
 
+void entry_refresh_label( panel_entry_t* ent )
+{
+    if ( ent->section->label_enabled )
+    {
+        // free the buffers if they have been allocated already
+        g_free( ent->label_markup_fmt );
+        free( ent->label_buffer );
+
+        ent->label_markup_fmt = g_markup_printf_escaped(
+                                        "<tt>"
+                                        "<span size=\"small\">"
+                                        "%s\n%%%d.%df%s"
+                                        "</span>"
+                                        "</tt>",
+                                        ent->section->label_str,
+                                        ent->section->label_digits,
+                                        ent->section->label_decimals,
+                                        ent->section->label_unit );
+
+        ent->label_bsize = strlen( ent->label_markup_fmt );
+        ent->label_buffer = calloc( MAX_F_CHARS + ent->label_bsize, 1 );
+    }
+}
+
+
 void entry_set_interval( panel_entry_t* entry, int new_ms )
 {
     // remove old timer
@@ -75,23 +100,16 @@ void entries_add( entries_t* entries, GtkBox* box, section_t* sec )
     ++entries->count;
 
     // add label
-    if ( sec->label_fmt )
+    if ( sec->label_enabled )
     {
         entry->label = gtk_label_new( "" );
         gtk_widget_show( entry->label );
+        gtk_label_set_justify( GTK_LABEL( entry->label ), GTK_JUSTIFY_RIGHT );
+        gtk_widget_set_margin_end( entry->label, 5 );
+        gtk_widget_set_margin_start( entry->label, 10 );
         gtk_box_pack_start( box, entry->label, FALSE, FALSE, 0 );
 
-        // TODO: validate that fmt contains %d
-
-        entry->label_markup_fmt = g_markup_printf_escaped(
-                                        "<tt>"
-                                        "<span size=\"small\">"
-                                        "%s"
-                                        "</span>"
-                                        "</tt>", sec->label_fmt );
-
-        entry->label_bsize = strlen( entry->label_markup_fmt );
-        entry->label_buffer = calloc( MAX_F_CHARS + entry->label_bsize, 1 );
+        entry_refresh_label( entry );
     }
 
     // setup interval
@@ -127,7 +145,7 @@ static gboolean collector( gpointer ptr )
     gtk_widget_queue_draw_area( ent->draw_area, 0, 0, ent->section->graph.w,
                                                       ent->section->graph.h );
 
-    if ( ent->section->label_fmt )
+    if ( ent->section->label_enabled )
     {
         entry_update_label( ent, val );
     }

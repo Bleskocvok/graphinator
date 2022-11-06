@@ -21,7 +21,12 @@ section_t default_sections[] =
 
         .draw_func = draw_lin,
         .interval = 750,
-        .label_fmt = " cpu\n%3.0f%% ",
+
+        .label_enabled  = 1,
+        .label_str      = "cpu:",
+        .label_decimals = 0,
+        .label_digits   = 3,
+        .label_unit     = "%%",
     },
 
     {
@@ -38,7 +43,12 @@ section_t default_sections[] =
 
         .draw_func = draw_lin,
         .interval = 750,
-        .label_fmt = " mem\n%3.0f%% ",
+
+        .label_enabled  = 1,
+        .label_str      = "mem:",
+        .label_decimals = 0,
+        .label_digits   = 3,
+        .label_unit     = "%%",
     },
 };
 

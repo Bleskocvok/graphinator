@@ -4,6 +4,7 @@
 #include "utils.h"
 
 #include <stdlib.h>     // NULL, calloc
+#include <string.h>     // strncat
 
 
 #define  MONITORS_COUNT  M_COUNT( MONITORS_STR )
@@ -37,7 +38,7 @@ void set_monitor(       GtkComboBox*    self,               page_t* ptr  );
 void set_interval(      GtkSpinButton*  self,               page_t* ptr  );
 void set_graph_mode(    GtkComboBox*    self,               page_t* ptr  );
 void toggle_label(      GtkCheckButton* self,               page_t* ptr  );
-void set_label(         GtkEntry*       self,  char* text,  page_t* ptr  );
+void set_label(         GtkEntry*       self,               page_t* ptr  );
 void set_prim_color(    GtkColorButton* self,               page_t* ptr  );
 void set_secon_color(   GtkColorButton* self,               page_t* ptr  );
 void set_w(             GtkSpinButton*  self,               page_t* ptr  );
@@ -272,7 +273,7 @@ void page_setup_signals( page_t* p )
     connect( p->spin_inter,  "value-changed",   set_interval,    p );
     connect( p->combo_graph, "changed",         set_graph_mode,  p );
     connect( p->check_label, "toggled",         toggle_label,    p );
-    connect( p->entry_label, "preedit-changed", toggle_label,    p );
+    connect( p->entry_label, "activate",        set_label,       p );
     connect( p->color_prim,  "color-set",       set_prim_color,  p );
     connect( p->color_secon, "color-set",       set_secon_color, p );
     connect( p->spin_w,      "value-changed",   set_w,           p );
@@ -294,9 +295,6 @@ void page_set_current_settings( page_t* p )
     gtk_spin_button_set_value( GTK_SPIN_BUTTON( p->spin_inter ),
                                p->entry->section->interval );
 
-    // p->check_label;
-    // p->entry_label;
-
     {
         GdkRGBA c = array_to_rgba( p->entry->section->graph.rgb_on );
         gtk_color_chooser_set_rgba( GTK_COLOR_CHOOSER( p->color_prim ), &c );
@@ -305,6 +303,12 @@ void page_set_current_settings( page_t* p )
         GdkRGBA c = array_to_rgba( p->entry->section->graph.rgb_off );
         gtk_color_chooser_set_rgba( GTK_COLOR_CHOOSER( p->color_secon ), &c );
     }
+
+    gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( p->check_label ),
+                                  p->entry->section->label_enabled );
+
+    gtk_entry_set_text( GTK_ENTRY( p->entry_label ),
+                                   p->entry->section->label_str );
 
     gtk_spin_button_set_value( GTK_SPIN_BUTTON( p->spin_w ),
                                p->entry->section->graph.w );
@@ -408,11 +412,19 @@ void toggle_label( GtkCheckButton* self, page_t* ptr )
 {
     int b = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( self ) );
     gtk_widget_set_sensitive( ptr->entry_label, b );
+
+    ptr->entry->section->label_enabled = b;
+    entry_refresh_label( ptr->entry );
 }
 
 
-// TODO
-void set_label( GtkEntry* self, char* text, page_t* ptr ) {}
+void set_label( GtkEntry* self, page_t* ptr )
+{
+    const char* text = gtk_entry_get_text( self );
+    ptr->entry->section->label_str[ 0 ] = '\0';
+    strncat( ptr->entry->section->label_str, text, LABEL_MAX_LEN - 1 );
+    entry_refresh_label( ptr->entry );
+}
 
 
 void set_prim_color( GtkColorButton* self, page_t* ptr )
