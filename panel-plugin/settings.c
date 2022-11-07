@@ -256,21 +256,20 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
     ++row;
 
     page_setup_signals( ctx );
-    
+
     page_set_current_settings( ctx );
 }
 
 
 void page_setup_signals( page_t* p )
 {
-#define  connect( w, str, call, p )  \
-    g_signal_connect( w, str, G_CALLBACK( call ), p )
+#define  connect( obj, str, call, p )  \
+    g_signal_connect( obj, str, G_CALLBACK( call ), p )
 
     connect( p->combo_mon,   "changed",         set_monitor,     p );
     connect( p->spin_inter,  "value-changed",   set_interval,    p );
     connect( p->combo_graph, "changed",         set_graph_mode,  p );
     connect( p->check_label, "toggled",         toggle_label,    p );
-    connect( p->entry_label, "activate",        set_label,       p );
     connect( p->color_prim,  "color-set",       set_prim_color,  p );
     connect( p->color_secon, "color-set",       set_secon_color, p );
     connect( p->spin_w,      "value-changed",   set_w,           p );
@@ -279,6 +278,9 @@ void page_setup_signals( page_t* p )
     connect( p->spin_blk_h,  "value-changed",   set_blk_h,       p );
     connect( p->spin_pad_x,  "value-changed",   set_pad_x,       p );
     connect( p->spin_pad_y,  "value-changed",   set_pad_y,       p );
+    // entry signals
+    connect( p->entry_label, "activate",        set_label,       p );
+    connect( p->entry_label, "changed",         set_label,       p );
 
 #undef  connect
 }
