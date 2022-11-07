@@ -23,7 +23,6 @@ typedef struct
 
     int label_enabled;
     char label_str[ LABEL_MAX_LEN ];
-    char label_unit[ LABEL_MAX_LEN ];
     int label_decimals;
     int label_digits;
 

@@ -40,7 +40,7 @@ double graph_max_value( const graph_t* graph );
 
 typedef void   ( *draw_func_t )    ( GtkWidget* widget,
                                      cairo_t* cr,
-                                     void* sec );
+                                     void* ptr );
 
 void draw_led( GtkWidget* widget, cairo_t* cr, void* ptr );
 void draw_lin( GtkWidget* widget, cairo_t* cr, void* ptr );

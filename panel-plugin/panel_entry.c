@@ -38,7 +38,8 @@ void entry_refresh_label( panel_entry_t* ent )
                                         ent->section->label_str,
                                         ent->section->label_digits,
                                         ent->section->label_decimals,
-                                        ent->section->label_unit );
+                                        collector_get_unit(
+                                            &ent->section->collector ) );
 
         ent->label_bsize = strlen( ent->label_markup_fmt );
         ent->label_buffer = calloc( MAX_F_CHARS + ent->label_bsize, 1 );
@@ -139,6 +140,8 @@ static gboolean collector( gpointer ptr )
     panel_entry_t* ent = ptr;
 
     double val = collector_collect( &ent->section->collector );
+
+    ent->section->graph.max_value = ent->section->collector.max_value;
 
     data_push( &ent->section->graph.data, val );
 

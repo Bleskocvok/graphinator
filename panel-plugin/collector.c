@@ -48,7 +48,16 @@ double collector_collect( collector_t* collector )
 
 const char* collector_get_unit( const collector_t* collector )
 {
+    if ( collector->get_unit )
+        return collector->get_unit( collector->ptr );
+    return "";
+}
 
+
+const char* get_percent( void* ptr )
+{
+    (void) ptr;
+    return "%%";
 }
 
 
