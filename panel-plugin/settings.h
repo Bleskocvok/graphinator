@@ -5,6 +5,7 @@
 
 // custom
 #include "graphinator.h"
+#include "panel_entry.h"
 
 // gtk, xfce
 #include <gtk/gtk.h>
@@ -12,7 +13,20 @@
 
 typedef struct
 {
+    GtkWidget* notebook;
+
+    entries_t* entries;         // (non-owning ptr)
+
+    struct page_t* pages;
+    size_t pages_count;
+
+} settings_t;
+
+
+typedef struct page_t
+{
     panel_entry_t* entry;       // (non-owning ptr)
+    settings_t* settings;       // (non-owning ptr)
 
     GtkWidget* combo_mon;
     GtkWidget* combo_graph;
@@ -29,18 +43,6 @@ typedef struct
     GtkWidget* spin_pad_y;
 
 } page_t;
-
-
-typedef struct
-{
-    GtkWidget* notebook;
-
-    entries_t* entries;         // (non-owning ptr)
-
-    page_t* pages;
-    size_t pages_count;
-
-} settings_t;
 
 
 void settings_construct( settings_t* settings,

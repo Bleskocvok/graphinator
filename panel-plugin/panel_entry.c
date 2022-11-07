@@ -58,11 +58,12 @@ void entry_set_interval( panel_entry_t* entry, int new_ms )
 }
 
 
-void entries_init( entries_t* entries, size_t reserved )
+void entries_init( entries_t* entries, size_t reserved, GtkBox* box )
 {
     *entries = (entries_t){ 0 };
     entries->ptr = calloc( reserved, sizeof( panel_entry_t ) );
     entries->alloc = reserved;
+    entries->box = box;
 }
 
 
@@ -82,24 +83,8 @@ void entries_free( entries_t* entries )
 }
 
 
-void entries_add( entries_t* entries, GtkBox* box, section_t* sec )
+static void construct_entry( panel_entry_t* entry, GtkBox* box, section_t* sec )
 {
-    // reallocate if necessary
-    if ( entries->count == entries->alloc )
-    {
-        entries->alloc *= 2;
-        if ( !( entries->ptr = realloc( entries->ptr, entries->alloc ) ) )
-        {
-            // TODO: handle allocation fail
-            return;
-        }
-    }
-
-    // add to collection
-    entries->ptr[ entries->count ] = (panel_entry_t){ .section = sec };
-    panel_entry_t* entry = &entries->ptr[ entries->count ];
-    ++entries->count;
-
     // add label
     if ( sec->label_enabled )
     {
@@ -125,6 +110,42 @@ void entries_add( entries_t* entries, GtkBox* box, section_t* sec )
     gtk_box_pack_start( box, entry->draw_area, FALSE, FALSE, 0 );
     g_signal_connect( G_OBJECT( entry->draw_area ), "draw",
                                                     G_CALLBACK( redraw ), sec );
+}
+
+
+void entries_add( entries_t* entries, section_t* sec )
+{
+    // reallocate if necessary
+    if ( entries->count == entries->alloc )
+    {
+        entries->alloc *= 2;
+        if ( !( entries->ptr = realloc( entries->ptr, entries->alloc ) ) )
+        {
+            // TODO: handle allocation fail
+            return;
+        }
+    }
+
+    // add to collection
+    entries->ptr[ entries->count ] = (panel_entry_t){ .section = sec };
+    panel_entry_t* entry = &entries->ptr[ entries->count ];
+    ++entries->count;
+
+    construct_entry( entry, entries->box, sec );
+}
+
+
+void entries_refresh_all( entries_t* entries )
+{
+    for ( int i = 0; i < entries->count; ++i )
+    {
+        g_source_remove( entries->ptr[ i ].timer );
+        gtk_widget_destroy( entries->ptr[ i ].draw_area );
+        gtk_widget_destroy( entries->ptr[ i ].label );
+
+        construct_entry( entries->ptr + i, entries->box,
+                         entries->ptr[ i ].section );
+    }
 }
 
 

@@ -29,21 +29,21 @@ const draw_func_t GRAPHS_FUNC[ GRAPHS_COUNT ] = { draw_lin, draw_led, };
 //
 
 // Callbacks
-void add_entry(         GtkButton*      self,               void*   ptr  );
-void remove_entry(      GtkButton*      self,               void*   ptr  );
-void set_monitor(       GtkComboBox*    self,               page_t* ptr  );
-void set_interval(      GtkSpinButton*  self,               page_t* ptr  );
-void set_graph_mode(    GtkComboBox*    self,               page_t* ptr  );
-void toggle_label(      GtkCheckButton* self,               page_t* ptr  );
-void set_label(         GtkEntry*       self,               page_t* ptr  );
-void set_prim_color(    GtkColorButton* self,               page_t* ptr  );
-void set_secon_color(   GtkColorButton* self,               page_t* ptr  );
-void set_w(             GtkSpinButton*  self,               page_t* ptr  );
-void set_h(             GtkSpinButton*  self,               page_t* ptr  );
-void set_blk_w(         GtkSpinButton*  self,               page_t* ptr  );
-void set_blk_h(         GtkSpinButton*  self,               page_t* ptr  );
-void set_pad_x(         GtkSpinButton*  self,               page_t* ptr  );
-void set_pad_y(         GtkSpinButton*  self,               page_t* ptr  );
+void add_entry(         GtkButton*      self,   void*   ptr  );
+void remove_entry(      GtkButton*      self,   void*   ptr  );
+void set_monitor(       GtkComboBox*    self,   page_t* ptr  );
+void set_interval(      GtkSpinButton*  self,   page_t* ptr  );
+void set_graph_mode(    GtkComboBox*    self,   page_t* ptr  );
+void toggle_label(      GtkCheckButton* self,   page_t* ptr  );
+void set_label(         GtkEntry*       self,   page_t* ptr  );
+void set_prim_color(    GtkColorButton* self,   page_t* ptr  );
+void set_secon_color(   GtkColorButton* self,   page_t* ptr  );
+void set_w(             GtkSpinButton*  self,   page_t* ptr  );
+void set_h(             GtkSpinButton*  self,   page_t* ptr  );
+void set_blk_w(         GtkSpinButton*  self,   page_t* ptr  );
+void set_blk_h(         GtkSpinButton*  self,   page_t* ptr  );
+void set_pad_x(         GtkSpinButton*  self,   page_t* ptr  );
+void set_pad_y(         GtkSpinButton*  self,   page_t* ptr  );
 
 
 // Main
@@ -354,6 +354,7 @@ void settings_construct( settings_t* settings,
     for ( size_t i = 0; i < entries->count; i++ )
     {
         settings->pages[ i ].entry = &settings->entries->ptr[ i ];
+        settings->pages[ i ].settings = settings;
         add_page( notebook, &settings->pages[ i ] );
     }
 
@@ -405,6 +406,8 @@ void toggle_label( GtkCheckButton* self, page_t* ptr )
 
     ptr->entry->section->label_enabled = b;
     entry_refresh_label( ptr->entry );
+
+    entries_refresh_all( ptr->settings->entries );
 }
 
 

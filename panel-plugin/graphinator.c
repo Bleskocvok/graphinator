@@ -15,7 +15,7 @@
 
 void add_sections( panel_t* pan, section_t* sections, size_t count )
 {
-    entries_init( &pan->entries, count );
+    entries_init( &pan->entries, count, GTK_BOX( pan->wrap ) );
 
     for ( size_t i = 0; i < count; i++ )
     {
@@ -24,7 +24,7 @@ void add_sections( panel_t* pan, section_t* sections, size_t count )
         data_init( &sec->graph.data, graph_cols( &sec->graph ) );
         collector_init( &sec->collector );
 
-        entries_add( &pan->entries, GTK_BOX( pan->wrap ), sec );
+        entries_add( &pan->entries, sec );
     }
 }
 
