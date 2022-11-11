@@ -41,8 +41,8 @@ void entry_refresh_label( panel_entry_t* ent )
                                         collector_get_unit(
                                             &ent->section->collector ) );
 
-        ent->label_bsize = strlen( ent->label_markup_fmt );
-        ent->label_buffer = calloc( MAX_F_CHARS + ent->label_bsize, 1 );
+        ent->label_bsize = MAX_F_CHARS + strlen( ent->label_markup_fmt );
+        ent->label_buffer = calloc( ent->label_bsize, 1 );
     }
 }
 
