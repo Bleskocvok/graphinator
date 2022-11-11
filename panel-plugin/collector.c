@@ -54,6 +54,12 @@ const char* collector_get_unit( const collector_t* collector )
 }
 
 
+int collector_equals( const collector_t* a, const collector_t* b )
+{
+    return a->collect == b->collect;
+}
+
+
 const char* get_percent( void* ptr )
 {
     (void) ptr;

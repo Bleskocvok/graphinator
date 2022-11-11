@@ -15,8 +15,8 @@ const char* MONITORS_STR[] = { "CPU", "Memory" };
 
 const collector_t* MONITORS_COL[ MONITORS_COUNT ] =
 {
-    &mem_collector,
     &cpu_collector,
+    &mem_collector,
 };
 
 
@@ -288,9 +288,25 @@ void page_setup_signals( page_t* p )
 
 void page_set_current_settings( page_t* p )
 {
-    // p->combo_mon;
-    // p->combo_graph;
-    
+    for ( int i = 0; i < GRAPHS_COUNT; ++i )
+    {
+        if ( collector_equals( &p->entry->section->collector,
+                               MONITORS_COL[ i ] ) )
+        {
+            gtk_combo_box_set_active( GTK_COMBO_BOX( p->combo_mon ), i );
+            break;
+        }
+    }
+
+    for ( int i = 0; i < GRAPHS_COUNT; ++i )
+    {
+        if ( p->entry->section->draw_func == GRAPHS_FUNC[ i ] )
+        {
+            gtk_combo_box_set_active( GTK_COMBO_BOX( p->combo_graph ), i );
+            break;
+        }
+    }
+
     gtk_spin_button_set_value( GTK_SPIN_BUTTON( p->spin_inter ),
                                p->entry->section->interval );
 
