@@ -194,7 +194,7 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
                font_h, xalign );
 
     ctx->color_prim = create_color_button( 0, 0, 0, 1 );
-    gtk_grid_attach( GTK_GRID( page ), ctx->color_prim, wide,           row,
+    gtk_grid_attach( GTK_GRID( page ), ctx->color_prim, wide, row,
                                                         narrow, 1 );
 
     ctx->color_secon = create_color_button( 1, 0, 1, 1 );
@@ -244,14 +244,12 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     ++row;
 
-    {
-        GtkWidget* but_remove = gtk_button_new_with_label( "Remove section" );
-        gtk_widget_show( but_remove );
-        gtk_grid_attach( GTK_GRID( page ), but_remove, 0, row, narrow, 1 );
-        // g_signal_connect(  );
-    }
-
-    ++row;
+    // // Remove section
+    // GtkWidget* but_remove = gtk_button_new_with_label( "Remove section" );
+    // gtk_widget_show( but_remove );
+    // gtk_grid_attach( GTK_GRID( page ), but_remove, 0, row, narrow, 1 );
+    // // g_signal_connect(  );
+    // ++row;
 
     page_setup_signals( ctx );
 
@@ -349,11 +347,12 @@ void settings_construct( settings_t* settings,
                          GtkWidget* container,
                          entries_t* entries )
 {
-    GtkWidget* new_but = gtk_button_new_with_label( "Add section" );
-    gtk_widget_show( new_but );
-    gtk_container_add( GTK_CONTAINER( container ), new_but );
-
-    g_signal_connect( new_but, "clicked", G_CALLBACK( add_entry ), NULL );
+    // // Add section
+    // GtkWidget* new_but = gtk_button_new_with_label( "Add section" );
+    // gtk_widget_show( new_but );
+    // gtk_container_add( GTK_CONTAINER( container ), new_but );
+    // // Add section signal
+    // g_signal_connect( new_but, "clicked", G_CALLBACK( add_entry ), NULL );
 
     GtkNotebook* notebook = GTK_NOTEBOOK( gtk_notebook_new() );
     settings->notebook = GTK_WIDGET( notebook );
