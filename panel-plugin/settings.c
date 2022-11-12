@@ -190,18 +190,16 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     ++row;
 
-    add_label( page, "Primary color:", 0, row, wide, 1, font_h, xalign );
+    add_label( page, "Main colors:", 0, row, wide, 1,
+               font_h, xalign );
 
     ctx->color_prim = create_color_button( 0, 0, 0, 1 );
-    gtk_grid_attach( GTK_GRID( page ), ctx->color_prim, wide, row, wide, 1 );
-
-    ++row;
-
-    add_label( page, "Secondary color:", 0, row, wide, 1, font_h, xalign );
+    gtk_grid_attach( GTK_GRID( page ), ctx->color_prim, wide,           row,
+                                                        narrow, 1 );
 
     ctx->color_secon = create_color_button( 1, 0, 1, 1 );
-    gtk_grid_attach( GTK_GRID( page ), ctx->color_secon, wide, row,
-                                       wide, 1 );
+    gtk_grid_attach( GTK_GRID( page ), ctx->color_secon, wide + narrow, row,
+                                                         narrow, 1 );
 
     ++row;
 
@@ -218,7 +216,7 @@ void add_page( GtkNotebook* notebook, page_t* ctx )
 
     ++row;
 
-    add_label( page, M_U8"Block Width ⨯ Block Height:", 0, row, wide, 1, font_h,
+    add_label( page, M_U8"Block width ⨯ Block height:", 0, row, wide, 1, font_h,
                xalign );
 
     ctx->spin_blk_w = gtk_spin_button_new_with_range( 0, 9999, 1 );
