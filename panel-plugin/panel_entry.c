@@ -29,6 +29,12 @@ void section_free( section_t* section )
 }
 
 
+void section_replace( section_t* section, const section_t* other )
+{
+    // TODO
+}
+
+
 void entry_refresh( panel_entry_t* entry )
 {
     gtk_widget_set_size_request( entry->draw_area, entry->section->graph.w,

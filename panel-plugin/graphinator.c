@@ -9,18 +9,13 @@
 #include "data.h"
 
 // c
-#include <stdlib.h>         // NULL
+#include <stdlib.h>         // NULL, size_t
 #include <stdio.h>          // snprintf
 
 
 extern const char* MONITORS_STR[ MONITORS_COUNT ] = { "CPU", "Memory" };
-
-extern const collector_t* MONITORS_COL[ MONITORS_COUNT ] =
-{
-    &cpu_collector,
-    &mem_collector,
-};
-
+extern const collector_t* MONITORS_COL[ MONITORS_COUNT ] = { &cpu_collector,
+                                                             &mem_collector, };
 
 extern const char* GRAPHS_STR[ GRAPHS_COUNT ] = { "Normal", "LED" };
 extern const draw_func_t GRAPHS_FUNC[ GRAPHS_COUNT ] = { draw_lin, draw_led, };
@@ -55,4 +50,24 @@ panel_t* plugin_construct_in_container( GtkContainer* container,
     gtk_container_add( GTK_CONTAINER( pan->ebox ), pan->wrap );
 
     return pan;
+}
+
+
+int find_collector( const collector_t** haystack, size_t count,
+                    const collector_t* needle )
+{
+    for ( int i = 0; i < count; ++i )
+        if ( collector_equals( needle, haystack[ i ] ) )
+            return i;
+    return -1;
+}
+
+
+int find_draw_func( const draw_func_t* haystack, size_t count,
+                    const draw_func_t needle )
+{
+    for ( int i = 0; i < count; ++i )
+        if ( needle == haystack[ i ] )
+            return i;
+    return -1;
 }

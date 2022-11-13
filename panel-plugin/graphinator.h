@@ -7,6 +7,8 @@
 #include <gtk/gtk.h>    // G_BEGIN_DECLS, GtkWidget, GtkContainer,
                         // GtkOrientation
 
+#include <stddef.h>     // size_t
+
 
 G_BEGIN_DECLS
 
@@ -37,6 +39,12 @@ panel_t* plugin_construct_in_container( GtkContainer* container,
                                         GtkOrientation orient );
 
 void add_sections( panel_t* pan, section_t* sections, size_t count );
+
+
+int find_collector( const collector_t** haystack, size_t count,
+                    const collector_t* needle );
+int find_draw_func( const draw_func_t* haystack, size_t count,
+                    const draw_func_t needle );
 
 
 G_END_DECLS

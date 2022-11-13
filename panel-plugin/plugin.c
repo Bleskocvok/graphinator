@@ -7,6 +7,8 @@
 #include "utils.h"
 
 #include <stdio.h>          // snprintf
+#include <stdlib.h>         // NULL
+#include <string.h>         // strncat
 
 // gtk, xfce
 #include <gtk/gtk.h>
@@ -65,6 +67,7 @@ typedef struct
 {
     settings_t* settings;       //     (owning ptr)
     XfcePanelPlugin* plugin;    // (non-owning ptr)
+    panel_t* panel;             // (non-owning ptr)
 
 } settings_dialog_t;
 
@@ -76,6 +79,8 @@ static void plugin_settings_close( GtkWidget* dialog,
     g_object_set_data( G_OBJECT( data->plugin ), "dialog", NULL );
     xfce_panel_plugin_unblock_menu( data->plugin );
     gtk_widget_destroy( dialog );
+
+    plugin_save( data->plugin, data->panel );
 
     // free settings_dialog_t
     settings_free( data->settings );
@@ -94,6 +99,7 @@ static void plugin_settings( XfcePanelPlugin* plugin, panel_t* pan )
     data = calloc( 1, sizeof( settings_dialog_t ) );
     data->settings = calloc( 1, sizeof( settings_t ) );
     data->plugin = plugin;
+    data->panel = pan;
 
     xfce_panel_plugin_block_menu( plugin );
 
@@ -132,7 +138,8 @@ static void plugin_about( XfcePanelPlugin* plugin )
 {
     (void) plugin;
 
-    GdkPixbuf* ico = xfce_panel_pixbuf_from_source( "graphinator-plugin", NULL, 128 );
+    GdkPixbuf* ico = xfce_panel_pixbuf_from_source( "graphinator-plugin",
+                                                    NULL, 128 );
 
     gtk_show_about_dialog( NULL,
                            "logo",         ico,
@@ -158,6 +165,8 @@ static void plugin_construct( XfcePanelPlugin* plugin )
 
     add_sections( pan, default_sections, default_sections_count );
 
+    plugin_load( plugin, pan );
+
     g_signal_connect( G_OBJECT( plugin ), "free-data",
                       G_CALLBACK( panel_free ), pan );
 
@@ -171,4 +180,202 @@ static void plugin_construct( XfcePanelPlugin* plugin )
     xfce_panel_plugin_menu_show_configure( plugin );
     g_signal_connect( G_OBJECT( plugin ), "configure-plugin",
                                           G_CALLBACK( plugin_settings ), pan );
+
+    g_signal_connect( G_OBJECT( plugin ), "save",
+                      G_CALLBACK( plugin_save ), pan );
+}
+
+
+static void entries_save( XfceRc* rc, const entries_t* entries )
+{
+    xfce_rc_write_int_entry( rc, "entries_count", (int) entries->count );
+
+    char buf[ 256 ] = { 0 };
+
+    for ( int i = 0; i < entries->count; i++ )
+    {
+        section_t* s = entries->ptr[ i ].section;
+
+        snprintf( buf, sizeof( buf ), "entry%d_monitor", i );
+        xfce_rc_write_int_entry( rc, buf, find_collector( MONITORS_COL,
+                                                          MONITORS_COUNT,
+                                                          &s->collector ) );
+
+        snprintf( buf, sizeof( buf ), "entry%d_interval", i );
+        xfce_rc_write_int_entry( rc, buf, s->interval );
+
+        snprintf( buf, sizeof( buf ), "entry%d_graph", i );
+        xfce_rc_write_int_entry( rc, buf, find_draw_func( GRAPHS_FUNC,
+                                                          GRAPHS_COUNT,
+                                                          s->draw_func ) );
+
+        snprintf( buf, sizeof( buf ), "entry%d_show_label", i );
+        xfce_rc_write_bool_entry( rc, buf, s->label_enabled );
+
+        snprintf( buf, sizeof( buf ), "entry%d_label", i );
+        xfce_rc_write_entry( rc, buf, s->label_str );
+
+        snprintf( buf, sizeof( buf ), "entry%d_1_color_r", i );
+        xfce_rc_write_int_entry( rc, buf, s->graph.rgb_on[ 0 ] * 255 );
+
+        snprintf( buf, sizeof( buf ), "entry%d_1_color_g", i );
+        xfce_rc_write_int_entry( rc, buf, s->graph.rgb_on[ 1 ] * 255 );
+
+        snprintf( buf, sizeof( buf ), "entry%d_1_color_b", i );
+        xfce_rc_write_int_entry( rc, buf, s->graph.rgb_on[ 2 ] * 255 );
+
+        snprintf( buf, sizeof( buf ), "entry%d_2_color_r", i );
+        xfce_rc_write_int_entry( rc, buf, s->graph.rgb_off[ 0 ] * 255 );
+
+        snprintf( buf, sizeof( buf ), "entry%d_2_color_g", i );
+        xfce_rc_write_int_entry( rc, buf, s->graph.rgb_off[ 1 ] * 255 );
+
+        snprintf( buf, sizeof( buf ), "entry%d_2_color_b", i );
+        xfce_rc_write_int_entry( rc, buf, s->graph.rgb_off[ 2 ] * 255 );
+
+        snprintf( buf, sizeof( buf ), "entry%d_w", i );
+        xfce_rc_write_int_entry( rc, buf, s->graph.w );
+
+        snprintf( buf, sizeof( buf ), "entry%d_h", i );
+        xfce_rc_write_int_entry( rc, buf, s->graph.h );
+
+        snprintf( buf, sizeof( buf ), "entry%d_blk_w", i );
+        xfce_rc_write_int_entry( rc, buf, s->graph.blk_w );
+
+        snprintf( buf, sizeof( buf ), "entry%d_blk_h", i );
+        xfce_rc_write_int_entry( rc, buf, s->graph.blk_h );
+
+        snprintf( buf, sizeof( buf ), "entry%d_pad_x", i );
+        xfce_rc_write_int_entry( rc, buf, s->graph.pad_x );
+
+        snprintf( buf, sizeof( buf ), "entry%d_pad_y", i );
+        xfce_rc_write_int_entry( rc, buf, s->graph.pad_y );
+    }
+}
+
+
+static void entries_load( XfceRc* rc, entries_t* entries )
+{
+    int count = xfce_rc_read_int_entry( rc, "entries_count",
+                                        default_sections_count );
+
+    char buf[ 256 ] = { 0 };
+
+    for ( int i = 0; i < 2; i++ )
+    {
+        section_t* s = entries->ptr[ i ].section;
+        const section_t* def = i < default_sections_count
+                             ? &default_sections[ i ]
+                             : s;
+
+        // section_free( s );
+
+        *s = *def;
+
+        snprintf( buf, sizeof( buf ), "entry%d_monitor", i );
+        int collector = xfce_rc_read_int_entry( rc, buf, -1 );
+        s->collector = collector == -1
+                     ? def->collector
+                     : *MONITORS_COL[ M_MIN( collector, MONITORS_COUNT - 1 ) ];
+
+        snprintf( buf, sizeof( buf ), "entry%d_interval", i );
+        s->interval = xfce_rc_read_int_entry( rc, buf, s->interval );
+
+        snprintf( buf, sizeof( buf ), "entry%d_graph", i );
+        int draw = xfce_rc_read_int_entry( rc, buf, -1 );
+        s->draw_func = draw == -1
+                     ? def->draw_func
+                     : GRAPHS_FUNC[ M_MIN( draw, GRAPHS_COUNT - 1 ) ];
+
+        snprintf( buf, sizeof( buf ), "entry%d_show_label", i );
+        s->label_enabled = xfce_rc_read_bool_entry( rc, buf,
+                                                    s->label_enabled );
+
+        snprintf( buf, sizeof( buf ), "entry%d_label", i );
+        const char* str = xfce_rc_read_entry( rc, buf, def->label_str );
+        s->label_str[ 0 ] = '\0';
+        strncat( s->label_str, str, LABEL_MAX_LEN - 1 );
+
+        double r = 0, g = 0, b = 0;
+
+        snprintf( buf, sizeof( buf ), "entry%d_1_color_r", i );
+        r = xfce_rc_read_int_entry( rc, buf, s->graph.rgb_on[ 0 ] * 255 );
+
+        snprintf( buf, sizeof( buf ), "entry%d_1_color_g", i );
+        g = xfce_rc_read_int_entry( rc, buf, s->graph.rgb_on[ 1 ] * 255 );
+
+        snprintf( buf, sizeof( buf ), "entry%d_1_color_b", i );
+        b = xfce_rc_read_int_entry( rc, buf, s->graph.rgb_on[ 2 ] * 255 );
+
+        s->graph.rgb_on[ 0 ] = r / 255.0;
+        s->graph.rgb_on[ 1 ] = g / 255.0;
+        s->graph.rgb_on[ 2 ] = b / 255.0;
+
+        snprintf( buf, sizeof( buf ), "entry%d_2_color_r", i );
+        r = xfce_rc_read_int_entry( rc, buf, s->graph.rgb_off[ 0 ] * 255 );
+
+        snprintf( buf, sizeof( buf ), "entry%d_2_color_g", i );
+        g = xfce_rc_read_int_entry( rc, buf, s->graph.rgb_off[ 1 ] * 255 );
+
+        snprintf( buf, sizeof( buf ), "entry%d_2_color_b", i );
+        b = xfce_rc_read_int_entry( rc, buf, s->graph.rgb_off[ 2 ] * 255 );
+
+        s->graph.rgb_off[ 0 ] = r / 255.0;
+        s->graph.rgb_off[ 1 ] = g / 255.0;
+        s->graph.rgb_off[ 2 ] = b / 255.0;
+
+        snprintf( buf, sizeof( buf ), "entry%d_w", i );
+        s->graph.w = xfce_rc_read_int_entry( rc, buf, s->graph.w );
+
+        snprintf( buf, sizeof( buf ), "entry%d_h", i );
+        s->graph.h = xfce_rc_read_int_entry( rc, buf, s->graph.h );
+
+        snprintf( buf, sizeof( buf ), "entry%d_blk_w", i );
+        s->graph.blk_w = xfce_rc_read_int_entry( rc, buf, s->graph.blk_w );
+
+        snprintf( buf, sizeof( buf ), "entry%d_blk_h", i );
+        s->graph.blk_h = xfce_rc_read_int_entry( rc, buf, s->graph.blk_h );
+
+        snprintf( buf, sizeof( buf ), "entry%d_pad_x", i );
+        s->graph.pad_x = xfce_rc_read_int_entry( rc, buf, s->graph.pad_x );
+
+        snprintf( buf, sizeof( buf ), "entry%d_pad_y", i );
+        s->graph.pad_y = xfce_rc_read_int_entry( rc, buf, s->graph.pad_y );
+
+        section_init( s );
+        entry_refresh( &entries->ptr[ i ] );
+    }
+}
+
+
+void plugin_save( XfcePanelPlugin* plugin, const panel_t* data )
+{
+    char* filename = xfce_panel_plugin_save_location( plugin, TRUE );
+    if ( !filename )
+        return;
+
+    XfceRc* rc = xfce_rc_simple_open( filename, FALSE );
+    g_free( filename );
+
+    if ( rc )
+        entries_save( rc, &data->entries );
+
+    xfce_rc_close( rc );
+}
+
+
+
+void plugin_load( XfcePanelPlugin* plugin, panel_t* data )
+{
+    char* filename = xfce_panel_plugin_save_location( plugin, TRUE );
+    if ( !filename )
+        return;
+
+    XfceRc* rc = xfce_rc_simple_open( filename, TRUE );
+    g_free( filename );
+
+    if ( rc )
+        entries_load( rc, &data->entries );
+
+    xfce_rc_close( rc );
 }
