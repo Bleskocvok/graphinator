@@ -13,6 +13,19 @@
 #include <stdio.h>          // snprintf
 
 
+extern const char* MONITORS_STR[ MONITORS_COUNT ] = { "CPU", "Memory" };
+
+extern const collector_t* MONITORS_COL[ MONITORS_COUNT ] =
+{
+    &cpu_collector,
+    &mem_collector,
+};
+
+
+extern const char* GRAPHS_STR[ GRAPHS_COUNT ] = { "Normal", "LED" };
+extern const draw_func_t GRAPHS_FUNC[ GRAPHS_COUNT ] = { draw_lin, draw_led, };
+
+
 void add_sections( panel_t* pan, section_t* sections, size_t count )
 {
     entries_init( &pan->entries, count, GTK_BOX( pan->wrap ) );

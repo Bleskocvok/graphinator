@@ -3,25 +3,10 @@
 
 #include "utils.h"
 #include "collector.h"
+#include "graphinator.h"
 
 #include <stdlib.h>     // NULL, calloc
 #include <string.h>     // strncat
-
-
-#define  MONITORS_COUNT  M_COUNT( MONITORS_STR )
-#define  GRAPHS_COUNT    M_COUNT( GRAPHS_STR )
-
-const char* MONITORS_STR[] = { "CPU", "Memory" };
-
-const collector_t* MONITORS_COL[ MONITORS_COUNT ] =
-{
-    &cpu_collector,
-    &mem_collector,
-};
-
-
-const char* GRAPHS_STR[] = { "Normal", "LED" };
-const draw_func_t GRAPHS_FUNC[ GRAPHS_COUNT ] = { draw_lin, draw_led, };
 
 
 //

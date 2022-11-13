@@ -14,6 +14,15 @@ G_BEGIN_DECLS
 #include "panel_entry.h"
 
 
+#define  MONITORS_COUNT  2
+#define  GRAPHS_COUNT    2
+
+extern const char*        MONITORS_STR[ MONITORS_COUNT ];
+extern const collector_t* MONITORS_COL[ MONITORS_COUNT ];
+extern const char*       GRAPHS_STR[  GRAPHS_COUNT ];
+extern const draw_func_t GRAPHS_FUNC[ GRAPHS_COUNT ];
+
+
 typedef struct
 {
     GtkWidget* ebox;

@@ -6,9 +6,12 @@
 #include "settings.h"       // settings_construct
 #include "utils.h"
 
+#include <stdio.h>          // snprintf
+
 // gtk, xfce
 #include <gtk/gtk.h>
-#include <libxfce4panel/libxfce4panel.h>
+#include <libxfce4panel/libxfce4panel.h>  // XfcePanelPlugin
+                                          // XFCE_PANEL_PLUGIN_REGISTER
 #include <libxfce4ui/libxfce4ui.h>        // xfce_titled_dialog_new_with_buttons
 
 
@@ -17,6 +20,11 @@
 //
 static void plugin_construct( XfcePanelPlugin* plugin );
 XFCE_PANEL_PLUGIN_REGISTER( plugin_construct );
+
+
+//
+// Other forwards declarations
+//
 
 
 static void panel_free( XfcePanelPlugin* plugin, gpointer ptr )
