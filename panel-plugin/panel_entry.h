@@ -60,6 +60,9 @@ typedef struct
 } entries_t;
 
 
+void section_init( section_t* section );
+void section_free( section_t* section );
+
 void entry_refresh( panel_entry_t* entry );
 void entry_set_interval( panel_entry_t* entry, int new_ms );
 void entry_refresh_label( panel_entry_t* entry );
@@ -67,6 +70,7 @@ void entry_refresh_label( panel_entry_t* entry );
 void entries_init( entries_t* entries, size_t reserved, GtkBox* box );
 void entries_free( entries_t* entries );
 void entries_add( entries_t* entries, section_t* sec );
+void entries_reset( entries_t* entries, size_t count );
 
 void entries_refresh_all( entries_t* entries );
 

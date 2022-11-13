@@ -33,9 +33,7 @@ void add_sections( panel_t* pan, section_t* sections, size_t count )
     for ( size_t i = 0; i < count; i++ )
     {
         section_t* sec = sections + i;
-
-        data_init( &sec->graph.data, graph_cols( &sec->graph ) );
-        collector_init( &sec->collector );
+        section_init( sec );
 
         entries_add( &pan->entries, sec );
     }

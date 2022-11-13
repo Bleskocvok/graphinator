@@ -1,6 +1,8 @@
 
 #include "panel_entry.h"
 
+#include "drawing.h"    // graph_cols
+
 #include <string.h>     // strlen
 #include <stdlib.h>     // calloc, realloc, free
 
@@ -10,6 +12,21 @@
 
 static gboolean collector( gpointer ptr );
 static void redraw( GtkWidget* widget, cairo_t* cr, section_t* sec );
+
+
+void section_init( section_t* sec )
+{
+    data_init( &sec->graph.data, graph_cols( &sec->graph ) );
+    collector_init( &sec->collector );
+}
+
+
+void section_free( section_t* section )
+{
+    data_free( &section->graph.data );
+    collector_free( &section->collector );
+    *section = (section_t){ 0 };
+}
 
 
 void entry_refresh( panel_entry_t* entry )
@@ -71,8 +88,7 @@ void entries_free( entries_t* entries )
 {
     for ( size_t i = 0; i < entries->count; ++i )
     {
-        data_free( &entries->ptr[ i ].section->graph.data );
-        collector_free( &entries->ptr[ i ].section->collector );
+        section_free( &entries->ptr[ i ].section );
 
         g_free( entries->ptr[ i ].label_markup_fmt );
         free( entries->ptr[ i ].label_buffer );
@@ -146,6 +162,14 @@ void entries_refresh_all( entries_t* entries )
         construct_entry( entries->ptr + i, entries->box,
                          entries->ptr[ i ].section );
     }
+}
+
+
+void entries_reset( entries_t* entries, size_t count )
+{
+    GtkBox* box = entries->box;
+    entries_free( entries );
+    entries_init( entries, count, box );
 }
 
 
