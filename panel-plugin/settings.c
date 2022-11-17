@@ -351,9 +351,18 @@ void settings_construct( settings_t* settings,
 
 
 // TODO
-void add_entry( GtkButton* self, void* ptr ) {}
+void add_entry( GtkButton* self, void* ptr )
+{
+    (void) self;
+    (void) ptr;
+}
+
 // TODO
-void remove_entry( GtkButton* self, void* ptr ) {}
+void remove_entry( GtkButton* self, void* ptr )
+{
+    (void) self;
+    (void) ptr;
+}
 
 
 void set_monitor( GtkComboBox* self, page_t* ptr )

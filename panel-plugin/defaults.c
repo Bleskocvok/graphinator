@@ -48,3 +48,4 @@ section_t default_sections[] =
 
 
 size_t default_sections_count = M_COUNT( default_sections );
+// size_t default_sections_count = 1;

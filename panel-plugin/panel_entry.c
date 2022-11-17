@@ -29,9 +29,12 @@ void section_free( section_t* section )
 }
 
 
-void section_replace( section_t* section, const section_t* other )
+void section_replace( section_t* section, section_t* other )
 {
-    // TODO
+    collector_free( &section->collector );
+    data_free( &section->graph.data );
+    *section = *other;
+    *other = (section_t){ 0 };
 }
 
 
@@ -94,7 +97,7 @@ void entries_free( entries_t* entries )
 {
     for ( size_t i = 0; i < entries->count; ++i )
     {
-        section_free( &entries->ptr[ i ].section );
+        section_free( entries->ptr[ i ].section );
 
         g_free( entries->ptr[ i ].label_markup_fmt );
         free( entries->ptr[ i ].label_buffer );
@@ -107,6 +110,8 @@ void entries_free( entries_t* entries )
 
 static void construct_entry( panel_entry_t* entry, GtkBox* box, section_t* sec )
 {
+    // TODO: add checks if sec is consistent
+
     // add label
     if ( sec->label_enabled )
     {
@@ -138,14 +143,14 @@ static void construct_entry( panel_entry_t* entry, GtkBox* box, section_t* sec )
 void entries_add( entries_t* entries, section_t* sec )
 {
     // reallocate if necessary
-    if ( entries->count == entries->alloc )
+    while ( entries->count >= entries->alloc )
     {
-        entries->alloc *= 2;
-        if ( !( entries->ptr = realloc( entries->ptr, entries->alloc ) ) )
-        {
-            // TODO: handle allocation fail
-            return;
-        }
+        size_t size = entries->alloc * 2 + 1;
+        entries->ptr = realloc( entries->ptr, size * sizeof( panel_entry_t ) );
+        entries->alloc = size;
+
+        if ( !entries->ptr )
+            return;     // TODO: handle allocation fail
     }
 
     // add to collection
@@ -159,7 +164,7 @@ void entries_add( entries_t* entries, section_t* sec )
 
 void entries_refresh_all( entries_t* entries )
 {
-    for ( int i = 0; i < entries->count; ++i )
+    for ( size_t i = 0; i < entries->count; ++i )
     {
         g_source_remove( entries->ptr[ i ].timer );
         gtk_widget_destroy( entries->ptr[ i ].draw_area );
@@ -200,9 +205,7 @@ static gboolean collector( gpointer ptr )
                                                       ent->section->graph.h );
 
     if ( ent->section->label_enabled )
-    {
         entry_update_label( ent, val );
-    }
 
     return G_SOURCE_CONTINUE;
 }

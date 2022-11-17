@@ -62,7 +62,7 @@ typedef struct
 
 void section_init( section_t* section );
 void section_free( section_t* section );
-void section_replace( section_t* section, const section_t* other );
+void section_replace( section_t* section, section_t* other );
 
 void entry_refresh( panel_entry_t* entry );
 void entry_set_interval( panel_entry_t* entry, int new_ms );
