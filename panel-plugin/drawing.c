@@ -92,11 +92,14 @@ void draw_lin( GtkWidget* widget, cairo_t* cr, void* ptr )
     if ( count <= 0 )
         return;
 
+    // TODO: center the whole thing (shift it by 1/2 of column to the right)
+    double used_w = ( cols - 1 ) * ( g.blk_w + g.pad_x );
+
     double prev = count - cols < 0 ? 0
                                    : blk * data_at( &sec->data, count - cols );
-    cairo_move_to( cr, g.w, g.h );
-    cairo_line_to( cr,   0, g.h );
-    cairo_line_to( cr,   0, g.h - prev );
+    cairo_move_to( cr, used_w, g.h );
+    cairo_line_to( cr,      0, g.h );
+    cairo_line_to( cr,      0, g.h - prev );
 
     for ( int x = 1; x < cols; ++x )
     {
@@ -104,10 +107,9 @@ void draw_lin( GtkWidget* widget, cairo_t* cr, void* ptr )
         double y = x < cols - count ? 0
                                     : blk * data_at( &sec->data, i );
         cairo_line_to( cr, ( g.blk_w + g.pad_x ) * x, g.h - y );
-        prev = y;
     }
 
-    cairo_line_to( cr, g.w, g.h - prev );
+    cairo_line_to( cr, used_w, g.h );
     cairo_close_path( cr );
 
     cairo_set_line_width( cr, 0.5 );
