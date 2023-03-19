@@ -1,7 +1,7 @@
 
 #include "settings.h"
 
-#include "utils.h"
+#include "utils.h"      // M_COUNT, M_U8, M_MAX
 #include "collector.h"
 #include "graphinator.h"
 
@@ -435,6 +435,14 @@ void set_secon_color( GtkColorButton* self, page_t* ptr )
 void set_w( GtkSpinButton* self, page_t* ptr )
 {
     ptr->entry->section->graph.w = read_spin( self );
+
+    // workaround to avoid crash with poorly set width
+    static const int MIN_WIDTH = 5;
+    ptr->entry->section->graph.w = M_MAX( MIN_WIDTH,
+                                          ptr->entry->section->graph.w );
+    // TODO: figure out the underlying issue with width ~ 0
+    // (appears to crash for width ∈ { 0, 1, 2 })
+
     entry_refresh( ptr->entry );
 }
 
