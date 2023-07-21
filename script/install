@@ -6,6 +6,10 @@
 set -x
 
 
+#
+# Install icons
+#
+
 DIR_ICO="/usr/share/icons/hicolor"
 
 
@@ -32,19 +36,22 @@ install -D -m 644                   \
 gtk-update-icon-cache $DIR_ICO
 
 
+#
+# Install shared library and .desktop file
+#
 
-# NAME="graphinator"
-# LIB="panel-plugin/.libs/lib$NAME.so"
+NAME="graphinator"
+LIB="panel-plugin/.libs/lib$NAME.so"
 
-# DIR_LIB="/usr/lib/x86_64-linux-gnu"
-# DIR_DESKTOP="/usr/share/xfce4/panel/plugins"
+DIR_LIB="/usr/lib/x86_64-linux-gnu"
+DIR_DESKTOP="/usr/share/xfce4/panel/plugins"
 
 
-# install -m 744                      \
-#     "$LIB"                          \
-#     "$DIR_LIB/xfce4/panel/plugins/lib$NAME.so"
+install -m 744                      \
+    "$LIB"                          \
+    "$DIR_LIB/xfce4/panel/plugins/lib$NAME.so"
 
-# install -m 644                      \
-#     "panel-plugin/$NAME.desktop"    \
-#     "$DIR_DESKTOP/$NAME.desktop"
+install -m 644                      \
+    "panel-plugin/$NAME.desktop"    \
+    "$DIR_DESKTOP/$NAME.desktop"
 

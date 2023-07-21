@@ -6,8 +6,11 @@
 set -x
 
 
-DIR_ICO="/usr/share/icons/hicolor"
+#
+# UNINSTALL icons
+#
 
+DIR_ICO="/usr/share/icons/hicolor"
 
 rm \
     $DIR_ICO/scalable/apps/graphinator-plugin.svg   \
@@ -16,3 +19,17 @@ rm \
     $DIR_ICO/64x64/apps/graphinator-plugin.png
 
 
+
+#
+# UNINSTALL shared library and .desktop file
+#
+
+NAME="graphinator"
+LIB="panel-plugin/.libs/lib$NAME.so"
+
+DIR_LIB="/usr/lib/x86_64-linux-gnu"
+DIR_DESKTOP="/usr/share/xfce4/panel/plugins"
+
+rm  \
+    "$DIR_LIB/xfce4/panel/plugins/lib$NAME.so"      \
+    "$DIR_DESKTOP/$NAME.desktop"
