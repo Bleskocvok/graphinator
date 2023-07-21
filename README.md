@@ -13,6 +13,8 @@ sudo apt install xfce4-dev-tools \
     imagemagick
 ```
 
+- Install:
+
 ```sh
 git clone https://github.com/Bleskocvok/graphinator.git
 
