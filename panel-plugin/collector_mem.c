@@ -1,7 +1,7 @@
 
 #include "collector_mem.h"
 
-#include "mem_info.h"
+#include "info_mem.h"
 
 #include <stddef.h>         // NULL
 

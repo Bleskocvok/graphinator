@@ -1,7 +1,7 @@
 
 #include "collector_cpu.h"
 
-#include "cpu_info.h"
+#include "info_cpu.h"
 
 #include <stddef.h>         // NULL
 

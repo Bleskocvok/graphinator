@@ -1,5 +1,5 @@
 
-#include "mem_info.h"
+#include "info_mem.h"
 
 // getline
 #define _POSIX_C_SOURCE 200809L

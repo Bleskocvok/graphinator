@@ -4,7 +4,7 @@
 #define _GNU_SOURCE
 
 // custom
-#include "cpu_info.h"
+#include "info_cpu.h"
 
 // c
 #include <stdlib.h>         // NULL, free, strtoull
@@ -99,7 +99,7 @@ unsigned long long proc_stat_work( proc_stat_t* stat )
          + stat->fields[ NICE ]
          + stat->fields[ SYSTEM ]
          // not entirely sure about these following two, whether or not they
-         // count as processor working
+         // count as the processor doing work
          + stat->fields[ GUEST ]
          + stat->fields[ GUEST_NICE ];
 }

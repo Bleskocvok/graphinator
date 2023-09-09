@@ -4,8 +4,8 @@
 
 // custom
 #include "graphinator.h"
-#include "cpu_info.h"
-#include "mem_info.h"
+#include "info_cpu.h"
+#include "info_mem.h"
 #include "data.h"
 #include "collector_cpu.h"
 #include "collector_mem.h"

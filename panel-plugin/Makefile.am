@@ -12,8 +12,8 @@ plugindir =                 \
 	$(libdir)/xfce4/panel/plugins
 
 libgraphinator_la_SOURCES = \
-	mem_info.c              \
-	cpu_info.c              \
+	info_mem.c              \
+	info_cpu.c              \
 	data.c                  \
 	drawing.c               \
 	collector.c             \
