@@ -7,6 +7,8 @@
 #include "cpu_info.h"
 #include "mem_info.h"
 #include "data.h"
+#include "collector_cpu.h"
+#include "collector_mem.h"
 
 // c
 #include <stdlib.h>         // NULL, size_t

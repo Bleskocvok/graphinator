@@ -2,7 +2,8 @@
 #include "defaults.h"
 
 #include "utils.h"
-#include "collector.h"
+#include "collector_mem.h"
+#include "collector_cpu.h"
 
 
 section_t default_sections[] =

@@ -17,11 +17,13 @@ libgraphinator_la_SOURCES = \
 	data.c                  \
 	drawing.c               \
 	collector.c             \
+    collector_cpu.c         \
+    collector_mem.c         \
 	panel_entry.c           \
 	graphinator.c           \
 	plugin.c                \
 	settings.c              \
-	defaults.c              
+	defaults.c
 
 libgraphinator_la_CFLAGS =  \
 	-std=c99 -Wall -Wextra  \
