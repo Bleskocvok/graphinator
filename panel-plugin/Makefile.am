@@ -24,7 +24,7 @@ libgraphinator_la_SOURCES = \
 	defaults.c              
 
 libgraphinator_la_CFLAGS =  \
-	-std=c11 -Wall -Wextra  \
+	-std=c99 -Wall -Wextra  \
 	-O2 -march=native       \
 	$(LIBXFCE4UTIL_CFLAGS)  \
 	$(LIBXFCE4UI_CFLAGS)    \
