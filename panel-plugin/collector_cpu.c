@@ -4,6 +4,7 @@
 #include "info_cpu.h"
 
 #include <stddef.h>         // NULL
+#include <stdlib.h>         // calloc, free
 
 
 const collector_t cpu_collector = CPU_COLLECTOR_INIT;
@@ -11,9 +12,12 @@ const collector_t cpu_collector = CPU_COLLECTOR_INIT;
 
 void* init_cpu_data( void )
 {
-    proc_stat_t* ptr = calloc( 1, sizeof( proc_stat_t ) );
+    proc_stat_t* ptr = (proc_stat_t*) calloc( 1, sizeof( proc_stat_t ) );
     if ( !ptr )
         return NULL;
+
+    // TODO: check return value
+    proc_stat_init( ptr );
 
     proc_stat_read( ptr, 1 );
     return ptr;
@@ -22,6 +26,7 @@ void* init_cpu_data( void )
 
 void free_cpu_data( void* ptr )
 {
+    proc_stat_free( (proc_stat_t*) ptr );
     free( ptr );
 }
 

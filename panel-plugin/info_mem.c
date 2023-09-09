@@ -19,6 +19,19 @@
     ( strncmp( line, pre, sizeof( pre ) - 1 ) == 0 )
 
 
+int proc_mem_init( proc_mem_t* info )
+{
+    *info = (proc_mem_t){ 0 };
+    return 0;
+}
+
+
+void proc_mem_free( proc_mem_t* info )
+{
+    free( info->buf );
+}
+
+
 static int parse_data( const char* str, unsigned long* num )
 {
     char* end;
@@ -38,47 +51,42 @@ static int parse_data( const char* str, unsigned long* num )
 }
 
 
-int proc_mem_read( proc_mem_t* mem_info )
+int proc_mem_read( proc_mem_t* info )
 {
-    static const char* mem_info_filename = "/proc/meminfo";
+    FILE* file = fopen( "/proc/meminfo", "r" );
 
-    FILE* file = fopen( mem_info_filename, "r" );
-
-    char* buf = NULL;
-    size_t allocated = 0;
+    if ( ferror( file ) )
+        return fclose( file ), -1;
 
     int i = 0;
 
-    *mem_info = (proc_mem_t){ 0 };
-
-    if ( ferror( file ) )
-        return fclose( file ), 0;
-
     for ( ; !feof( file ) && i < 3; ++i )
     {
-        ssize_t len = getline( &buf, &allocated, file ) - 1;  // -1 cause of \n
-        buf[ len ] = '\0';                                    // remove newline
+        // -1 cause of \n
+        ssize_t len = getline( &info->buf, &info->allocated, file ) - 1;
+        // remove newline
+        info->buf[ len ] = '\0';
 
-        char* line = buf;
+        char* line = info->buf;
         unsigned long num = 0;
 
         if ( IS_PREFIX( line, "MemTotal:" ) )
         {
             line += sizeof( "MemTotal:" );
             parse_data( line, &num );
-            mem_info->total = num;
+            info->total = num;
         }
         else if ( IS_PREFIX( line, "MemFree:" ) )
         {
             line += sizeof( "MemFree:" );
             parse_data( line, &num );
-            mem_info->free = num;
+            info->free = num;
         }
         else if ( IS_PREFIX( line, "MemAvailable:" ) )
         {
             line += sizeof( "MemAvailable:" );
             parse_data( line, &num );
-            mem_info->avail = num;
+            info->avail = num;
         }
         else
         {
@@ -87,8 +95,6 @@ int proc_mem_read( proc_mem_t* mem_info )
             return -1;
         }
     }
-
-    free( buf );
 
     fclose( file );
 

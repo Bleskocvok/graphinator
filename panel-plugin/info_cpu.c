@@ -16,6 +16,19 @@
 #include <stdio.h>          // getline
 
 
+int proc_stat_init( proc_stat_t* stat )
+{
+    *stat = (proc_stat_t){ 0 };
+    return 0;
+}
+
+
+void proc_stat_free( proc_stat_t* stat )
+{
+    free( stat->buf );
+}
+
+
 int proc_stat_read_str( proc_stat_t* stat, const char* str )
 {
     int i = 0;
@@ -39,24 +52,25 @@ int proc_stat_read_str( proc_stat_t* stat, const char* str )
 
 int proc_stat_read( proc_stat_t* stat, int stat_count )
 {
-    static const char* cpu_info_filename = "/proc/stat";
+    stat->file = fopen( "/proc/stat", "r" );
 
-    FILE* file = fopen( cpu_info_filename, "r" );
+    if ( ferror( stat->file ) )
+        return fclose( stat->file ), stat->file = NULL, 0;
 
-    char* buf = NULL;
-    size_t allocated = 0;
+    if ( !stat->file )
+        return 0;
 
     int i = 0;
 
-    if ( ferror( file ) )
-        return fclose( file ), 0;
-
-    for ( ; !feof( file ) && i < stat_count; ++i )
+    for ( ; !feof( stat->file ) && i < stat_count; ++i )
     {
-        ssize_t len = getline( &buf, &allocated, file ) - 1;  // -1 cause of \n
-        buf[ len ] = '\0';                                    // remove newline
+        // TODO: reuse this buffer for all polls
+        // -1 cause of \n
+        ssize_t len = getline( &stat->buf, &stat->allocated, stat->file ) - 1;
+        // remove newline
+        stat->buf[ len ] = '\0';
 
-        char* line = buf;
+        char* line = stat->buf;
 
         if ( strncmp( line, "cpu", 3 ) != 0 )
             break;
@@ -70,9 +84,7 @@ int proc_stat_read( proc_stat_t* stat, int stat_count )
         proc_stat_read_str( stat + i, line );
     }
 
-    free( buf );
-
-    fclose( file );
+    fclose( stat->file );
 
     return i;
 }
