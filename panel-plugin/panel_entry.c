@@ -56,16 +56,14 @@ void entry_refresh_label( panel_entry_t* ent )
         free( ent->label_buffer );
 
         ent->label_markup_fmt = g_markup_printf_escaped(
-                                        "<tt>"
-                                        "<span size=\"small\">"
-                                        "%s\n%%%d.%df%s"
-                                        "</span>"
-                                        "</tt>",
-                                        ent->section->label_str,
-                                        ent->section->label_digits,
-                                        ent->section->label_decimals,
-                                        collector_get_unit(
-                                            &ent->section->collector ) );
+                                    "<tt>"
+                                    "<span size=\"small\">"
+                                    "%s\n%%%d.%df%%s"
+                                    "</span>"
+                                    "</tt>",
+                                    ent->section->label_str,
+                                    ent->section->label_digits,
+                                    ent->section->label_decimals );
 
         ent->label_bsize = MAX_F_CHARS + strlen( ent->label_markup_fmt );
         ent->label_buffer = calloc( ent->label_bsize, 1 );
@@ -186,7 +184,8 @@ void entries_reset( entries_t* entries, size_t count )
 
 static void entry_update_label( panel_entry_t* ent, float val )
 {
-    snprintf( ent->label_buffer, ent->label_bsize, ent->label_markup_fmt, val );
+    snprintf( ent->label_buffer, ent->label_bsize, ent->label_markup_fmt, val,
+              collector_get_unit( &ent->section->collector ) );
     gtk_label_set_markup( GTK_LABEL( ent->label ), ent->label_buffer );
 }
 

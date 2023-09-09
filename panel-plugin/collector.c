@@ -56,5 +56,5 @@ int collector_equals( const collector_t* a, const collector_t* b )
 const char* get_percent( void* ptr )
 {
     (void) ptr;
-    return "%%";
+    return "%";
 }
