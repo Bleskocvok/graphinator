@@ -40,3 +40,5 @@ Right click on the XFCE panel → Panel → Add New Items… → Select `Graphin
 - Show grid option
 - Show background option
 - Show ruler option
+- Options to show all cpu cores
+- Simple bar graph rendering option
