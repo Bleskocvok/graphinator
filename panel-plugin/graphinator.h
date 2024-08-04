@@ -17,7 +17,7 @@ G_BEGIN_DECLS
 
 
 #define  MONITORS_COUNT  2
-#define  GRAPHS_COUNT    2
+#define  GRAPHS_COUNT    3
 
 extern const char*        MONITORS_STR[ MONITORS_COUNT ];
 extern const collector_t* MONITORS_COL[ MONITORS_COUNT ];

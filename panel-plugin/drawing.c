@@ -49,7 +49,7 @@ void draw_led( GtkWidget* widget, cairo_t* cr, void* ptr )
                            : max_value / (double) rows;
 
     gtk_render_background( gtk_widget_get_style_context( widget ),
-                           cr, 0, 0, g.w, g.h);
+                           cr, 0, 0, g.w, g.h );
 
     for ( int y = 0; y < rows; ++y )
     {
@@ -118,3 +118,34 @@ void draw_lin( GtkWidget* widget, cairo_t* cr, void* ptr )
     cairo_fill( cr );
 }
 
+
+void draw_bar( GtkWidget* widget, cairo_t* cr, void* ptr )
+{
+    graph_t* sec = ptr;
+    const graph_t g = *sec;
+
+    int rows = graph_rows( &g );
+    int cols = graph_cols( &g );
+    int count = data_count( &sec->data );
+
+    double max_value = graph_max_value( &g );
+    double blk = g.h / (double) max_value;
+
+    gtk_render_background( gtk_widget_get_style_context( widget ),
+                           cr, 0, 0, g.w, g.h );
+
+    cairo_set_source_rgb( cr, g.rgb_on[ 0 ], g.rgb_on[ 1 ], g.rgb_on[ 2 ] );
+
+    for ( int x = 1; x < cols; ++x )
+    {
+        int i = x + count - cols;
+        double y = x < cols - count ? 0
+                                    : blk * data_at( &sec->data, i );
+        cairo_rectangle( cr, ( g.blk_w + g.pad_x ) * x,
+                             g.h - y,
+                             g.blk_w,
+                             y );
+    }
+
+    cairo_fill( cr );
+}

@@ -44,6 +44,7 @@ typedef void   ( *draw_func_t )    ( GtkWidget* widget,
 
 void draw_led( GtkWidget* widget, cairo_t* cr, void* ptr );
 void draw_lin( GtkWidget* widget, cairo_t* cr, void* ptr );
+void draw_bar( GtkWidget* widget, cairo_t* cr, void* ptr );
 
 
 #endif // __DRAWING_H__

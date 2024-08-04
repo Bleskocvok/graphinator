@@ -387,12 +387,18 @@ void set_interval( GtkSpinButton* self, page_t* ptr )
 
 void set_graph_mode( GtkComboBox* self, page_t* ptr )
 {
-    switch ( gtk_combo_box_get_active( self ) )
-    {
-        case 0: ptr->entry->section->draw_func = &draw_lin; break;
-        case 1: ptr->entry->section->draw_func = &draw_led; break;
-        default: return;
-    }
+    int idx = gtk_combo_box_get_active( self );
+    if ( idx >= GRAPHS_COUNT )
+        return;
+
+    ptr->entry->section->draw_func = GRAPHS_FUNC[ idx ];
+
+    // switch ( gtk_combo_box_get_active( self ) )
+    // {
+    //     case 0: ptr->entry->section->draw_func = &draw_lin; break;
+    //     case 1: ptr->entry->section->draw_func = &draw_led; break;
+    //     default: return;
+    // }
 }
 
 

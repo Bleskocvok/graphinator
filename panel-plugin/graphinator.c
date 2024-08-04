@@ -19,8 +19,8 @@ const char* MONITORS_STR[ MONITORS_COUNT ] = { "CPU", "Memory" };
 const collector_t* MONITORS_COL[ MONITORS_COUNT ] = { &cpu_collector,
                                                       &mem_collector, };
 
-const char* GRAPHS_STR[ GRAPHS_COUNT ] = { "Normal", "LED" };
-const draw_func_t GRAPHS_FUNC[ GRAPHS_COUNT ] = { draw_lin, draw_led, };
+const char* GRAPHS_STR[ GRAPHS_COUNT ] = { "Normal", "LED", "Bars" };
+const draw_func_t GRAPHS_FUNC[ GRAPHS_COUNT ] = { draw_lin, draw_led, draw_bar };
 
 
 void add_sections( panel_t* pan, section_t* sections, size_t count )
