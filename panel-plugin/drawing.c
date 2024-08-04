@@ -124,7 +124,6 @@ void draw_bar( GtkWidget* widget, cairo_t* cr, void* ptr )
     graph_t* sec = ptr;
     const graph_t g = *sec;
 
-    int rows = graph_rows( &g );
     int cols = graph_cols( &g );
     int count = data_count( &sec->data );
 
