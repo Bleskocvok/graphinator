@@ -12,10 +12,10 @@ There exist a few extensions/plugins for panels that display CPU/Memory usage.
 But it's hard to come by one that meets all the requirements one would want.
 
 - Efficiency. It would be a useless CPU usage meter if it used a noticeable
-  amount of CPU performance. Once I tried one that made my PC lag every time it
-  took a measurement (it became noticeable while watching youtube videos and
-  something didn't seem right with the video lagging every second (the PC
-  wasn't particularly weak either)).
+  amount of CPU performance. Once I tried a popular one that made my PC lag
+  every time it took a measurement (it became noticeable while watching youtube
+  videos and something didn't seem right with the video lagging every second
+  (the PC wasn't particularly weak either)).
 
 - Configurability. Allow for multiple colors, graph types etc. for display.
 
