@@ -6,6 +6,27 @@ memory.
 
 ![Image demonstration](res/image.png)
 
+## Motivation
+
+There exist a few extensions/plugins for panels that display CPU/Memory usage.
+But it's hard to come by one that meets all the requirements one would want.
+
+- Efficiency. It would be a useless CPU usage meter if it used a noticeable
+  amount of CPU performance. Once I tried one that made my PC lag every time it
+  took a measurement (it became noticeable while watching youtube videos and
+  something didn't seem right with the video lagging every second (the PC
+  wasn't particularly weak either)).
+
+- Configurability. Allow for multiple colors, graph types etc. for display.
+
+- Extensibility. Show other types of information, such as memory usage, net
+  usage or even information from user provided script (but those are still to
+  be done).
+
+There are surely few that meet some or most of these requirements, and there
+was one I used on Gnome. However, I wasn't able to find a good one for XFCE, so
+I made this plugin which at partially satisfies my requirements. Perhaps the
+remaining features in TODO are to be done some day when I stop procrastinating.
 
 ## Installation
 
