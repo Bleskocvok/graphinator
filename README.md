@@ -65,3 +65,4 @@ Right click on the XFCE panel → Panel → Add New Items… → Select `Graphin
 - ~~Simple bar graph rendering option~~
 - More “multigraph” options (e.g., show download & upload using one graph with
   two colors)
+- Package as .deb and potentially other formats
